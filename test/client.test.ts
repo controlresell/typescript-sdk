@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
-  ControlResell, IDEMPOTENCY_KEY_HEADER, NotFoundError, RateLimitError, ServerError, VERSION,
+  ConflictError, ControlResell, IDEMPOTENCY_KEY_HEADER, NotFoundError, RateLimitError, ServerError, VERSION,
 } from '../src/index.js';
 
 const KEY = 'cr_test_secret';
@@ -64,6 +64,17 @@ test('a POST keeps the same Idempotency-Key across retries', async () => {
   assert.equal(response?.status, 201);
   assert.equal(keys.length, 3);
   assert.ok(keys[0] && keys.every((k) => k === keys[0]), String(keys));
+});
+
+test('only the 409 idempotency_in_progress is retried', async () => {
+  let calls = 0;
+  const { sdk } = client(() => { calls++; return json(envelope('idempotency_key_reused'), 409); });
+  await assert.rejects(sdk.items.getItem(1), ConflictError);
+  assert.equal(calls, 1, 'another 409 is not retried');
+  calls = 0;
+  const other = client(() => (++calls === 1 ? json(envelope('idempotency_in_progress'), 409) : json({ id: 1, username: 'u', currency: 'EUR' })));
+  await other.sdk.me.getMe();
+  assert.equal(calls, 2, 'idempotency_in_progress is retried once');
 });
 
 test('a 500 of a POST is not retried', async () => {

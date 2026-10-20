@@ -13,8 +13,22 @@ export interface RetryPolicy {
   maxDelayMs?: number;
 }
 
-/** A rate limit, a conflict on a key still in flight, a gateway or availability error. A 500 is never retried. */
-const RETRIED_STATUSES = new Set([409, 429, 502, 503, 504]);
+/** A rate limit, a gateway or availability error. A 500 is never retried; a 409 only for a key still in flight. */
+const RETRIED_STATUSES = new Set([429, 502, 503, 504]);
+
+/** The code of the 409 answered while the first request with the same `Idempotency-Key` is still running. */
+const IDEMPOTENCY_IN_PROGRESS = 'idempotency_in_progress';
+
+async function shouldRetry(response: Response): Promise<boolean> {
+  if (RETRIED_STATUSES.has(response.status)) return true;
+  if (response.status !== 409) return false;
+  try {
+    const body = (await response.clone().json()) as { error?: { code?: unknown } };
+    return body?.error?.code === IDEMPOTENCY_IN_PROGRESS;
+  } catch {
+    return false;
+  }
+}
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -43,7 +57,7 @@ export function retryingFetch(base: typeof fetch, policy: RetryPolicy = {}): (re
         await sleep(backoff(attempt, baseDelayMs, maxDelayMs));
         continue;
       }
-      if (last || !RETRIED_STATUSES.has(response.status)) return response;
+      if (last || !(await shouldRetry(response))) return response;
       const retryAfter = Number(response.headers.get('Retry-After'));
       await sleep(response.headers.has('Retry-After') && Number.isFinite(retryAfter)
         ? Math.min(retryAfter * 1000, maxDelayMs)
