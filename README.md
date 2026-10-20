@@ -1,0 +1,15 @@
+# ControlResell TypeScript SDK
+
+TypeScript client for the [ControlResell](https://controlresell.com) public API (Node 20+, any runtime with `fetch`).
+
+```ts
+import { ControlResell } from 'controlresell';
+
+const client = new ControlResell({ apiKey: 'cr_live_...' }); // or set CONTROLRESELL_API_KEY
+const me = await client.me.getMe();
+for await (const item of client.items.listAll({ sold: false })) console.log(item.name);
+```
+
+Retries (rate limits, 502/503/504, network errors), `Idempotency-Key` on every `POST`, cursor pagination with `for await` and typed errors (`NotFoundError`, `RateLimitError`…) are built in. The client is generated from the API's OpenAPI document (`npm run generate`, code in `src/generated`).
+
+Not published yet. Licensed under the Apache License 2.0.

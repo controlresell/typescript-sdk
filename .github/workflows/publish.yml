@@ -1,0 +1,17 @@
+name: Publish
+# Manual only. Publishing to npm is not enabled yet: this builds and packs the package, without any registry credential.
+on:
+  workflow_dispatch:
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm test
+      - name: Pack (no publication)
+        run: npm pack --dry-run
