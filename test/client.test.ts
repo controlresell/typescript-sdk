@@ -111,3 +111,57 @@ test('an item keeps its amount as a decimal string and tolerates unknown values'
   assert.equal(it.sex, 'A_NEW_VALUE');
   assert.equal(it.purchasePrice, null);
 });
+
+test('publishItem posts the accounts with an Idempotency-Key and reads the scheduled action', async () => {
+  const { requests, sdk } = client(() => json({ itemId: 7, action: 'PUBLISH', accountIds: ['a1'], scheduledAt: '2026-10-21T10:00:00Z' }, 202));
+  const action = await sdk.items.publishItem(7, { accountIds: ['a1'] });
+  assert.equal(action.action, 'PUBLISH');
+  assert.equal(requests[0].method, 'POST');
+  assert.equal(new URL(requests[0].url).pathname, '/api/public/v1/items/7/publish');
+  assert.deepEqual(await requests[0].clone().json(), { accountIds: ['a1'] });
+  assert.ok(requests[0].headers.get(IDEMPOTENCY_KEY_HEADER));
+});
+
+test('a write uses the Idempotency-Key it is given', async () => {
+  const { requests, sdk } = client(() => json({ itemId: 7, action: 'REPUBLISH', accountIds: [], scheduledAt: '2026-10-21T10:00:00Z' }, 202));
+  await sdk.items.republishItem(7, {}, { idempotencyKey: 'my-key' });
+  assert.equal(requests[0].headers.get(IDEMPOTENCY_KEY_HEADER), 'my-key');
+  assert.equal(new URL(requests[0].url).pathname, '/api/public/v1/items/7/republish');
+});
+
+test('dropItemPrice posts the drop to the price-drop route', async () => {
+  const { requests, sdk } = client(() => json({ itemId: 7, action: 'PRICE_DROP', accountIds: [], scheduledAt: '2026-10-21T10:00:00Z' }, 202));
+  await sdk.items.dropItemPrice(7, { type: 'PERCENT', value: '10' });
+  assert.equal(new URL(requests[0].url).pathname, '/api/public/v1/items/7/price-drop');
+  assert.deepEqual(await requests[0].clone().json(), { type: 'PERCENT', value: '10' });
+});
+
+test('deleteItem resolves on 204 and throws a typed error on 409', async () => {
+  const ok = client(() => new Response(null, { status: 204 }));
+  await ok.sdk.items.deleteItem(7);
+  assert.equal(ok.requests[0].method, 'DELETE');
+  const refused = client(() => json(envelope('item_still_listed'), 409));
+  await assert.rejects(refused.sdk.items.deleteItem(7), (e: unknown) => e instanceof ConflictError && e.code === 'item_still_listed');
+});
+
+test('sendMessage and sendOffer post to the conversation', async () => {
+  const message = { id: 'm1', text: 'hi' };
+  const { requests, sdk } = client(() => json(message, 201));
+  await sdk.conversations.sendMessage('c1', { text: 'hi' });
+  await sdk.conversations.sendOffer('c1', { price: { amount: '12.50', currency: 'EUR' } });
+  assert.deepEqual(requests.map((r) => new URL(r.url).pathname), ['/api/public/v1/conversations/c1/messages', '/api/public/v1/conversations/c1/offers']);
+  assert.deepEqual(await requests[1].clone().json(), { price: { amount: '12.50', currency: 'EUR' } });
+});
+
+test('a write keeps the same Idempotency-Key across its retries', async () => {
+  const keys: Array<string | null> = [];
+  const { sdk } = client((request) => {
+    keys.push(request.headers.get(IDEMPOTENCY_KEY_HEADER));
+    return keys.length < 2
+      ? json(envelope('idempotency_unavailable'), 503)
+      : json({ id: 'm1', conversationId: 'c1', author: 'SELLER', type: 'TEXT', status: 'SENT', createdAt: '2026-10-21T10:00:00Z' }, 201);
+  });
+  await sdk.conversations.sendMessage('c1', { text: 'hi' });
+  assert.equal(keys.length, 2);
+  assert.ok(keys[0] && keys[0] === keys[1], String(keys));
+});

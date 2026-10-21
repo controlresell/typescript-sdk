@@ -136,6 +136,45 @@ export type ListingPage = {
 };
 
 /**
+ * PublishRequest
+ */
+export type PublishRequest = {
+    accountIds: Array<string>;
+    cancelBeforeProceeding?: boolean | null;
+};
+
+/**
+ * ScheduledAction
+ */
+export type ScheduledAction = {
+    itemId: number;
+    action: string;
+    accountIds: Array<string>;
+    scheduledAt: string;
+};
+
+/**
+ * PriceDropRequest
+ */
+export type PriceDropRequest = {
+    type: string;
+    value: string;
+    roundType?: string | null;
+    roundStep?: string | null;
+    accountIds?: Array<string> | null;
+};
+
+/**
+ * RepublishRequest
+ */
+export type RepublishRequest = {
+    accountIds?: Array<string> | null;
+    priceDrop?: PriceDropRequest | null;
+    priceVariation?: string | null;
+    allowIfDeleted?: boolean | null;
+};
+
+/**
  * Offer
  */
 export type Offer = {
@@ -187,6 +226,21 @@ export type ConversationPage = {
 export type MessagePage = {
     data: Array<Message>;
     nextCursor?: string | null;
+};
+
+/**
+ * SendMessageRequest
+ */
+export type SendMessageRequest = {
+    text: string;
+};
+
+/**
+ * SendOfferRequest
+ */
+export type SendOfferRequest = {
+    price: Money;
+    transactionId?: string | null;
 };
 
 export type GetMeData = {
@@ -408,6 +462,68 @@ export type ListItemsResponses = {
 
 export type ListItemsResponse = ListItemsResponses[keyof ListItemsResponses];
 
+export type DeleteItemData = {
+    body?: never;
+    path: {
+        /**
+         * The item's identifier, a number.
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/api/public/v1/items/{id}';
+};
+
+export type DeleteItemErrors = {
+    /**
+     * A malformed request: `bad_request`, `error_body_invalid`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:write` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`item_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The item is still online on a marketplace (`item_still_listed`).
+     */
+    409: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type DeleteItemError = DeleteItemErrors[keyof DeleteItemErrors];
+
+export type DeleteItemResponses = {
+    /**
+     * The item is deleted.
+     */
+    204: void;
+};
+
+export type DeleteItemResponse = DeleteItemResponses[keyof DeleteItemResponses];
+
 export type GetItemData = {
     body?: never;
     path: {
@@ -523,6 +639,234 @@ export type ListItemListingsResponses = {
 };
 
 export type ListItemListingsResponse = ListItemListingsResponses[keyof ListItemListingsResponses];
+
+export type PublishItemData = {
+    body: PublishRequest;
+    headers: {
+        /**
+         * 1 to 255 characters, unique per write: a retry with the same key and the same request answers the first response again (`Idempotent-Replayed: true`), without running the write twice.
+         */
+        'Idempotency-Key': string;
+    };
+    path: {
+        /**
+         * The item's identifier, a number.
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/api/public/v1/items/{id}/publish';
+};
+
+export type PublishItemErrors = {
+    /**
+     * A malformed request: `bad_request`, `error_body_invalid`, or no `Idempotency-Key` (`idempotency_key_required`).
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:write` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`item_not_found`, `account_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The `Idempotency-Key` was used with another request (`idempotency_key_reused`), or its first request is still running (`idempotency_in_progress`).
+     */
+    409: ErrorResponse;
+    /**
+     * Refused by a business rule (`publish_refused`): see `error.message` and `error.params`.
+     */
+    422: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * The replay guarantee is unavailable (`idempotency_unavailable`): retry later with the same key.
+     */
+    503: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type PublishItemError = PublishItemErrors[keyof PublishItemErrors];
+
+export type PublishItemResponses = {
+    /**
+     * The publication is scheduled on every account of the request.
+     */
+    202: ScheduledAction;
+};
+
+export type PublishItemResponse = PublishItemResponses[keyof PublishItemResponses];
+
+export type DropItemPriceData = {
+    body: PriceDropRequest;
+    headers: {
+        /**
+         * 1 to 255 characters, unique per write: a retry with the same key and the same request answers the first response again (`Idempotent-Replayed: true`), without running the write twice.
+         */
+        'Idempotency-Key': string;
+    };
+    path: {
+        /**
+         * The item's identifier, a number.
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/api/public/v1/items/{id}/price-drop';
+};
+
+export type DropItemPriceErrors = {
+    /**
+     * A malformed request: `bad_request`, `error_body_invalid`, or no `Idempotency-Key` (`idempotency_key_required`).
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:write` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`item_not_found`, `account_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The `Idempotency-Key` was used with another request (`idempotency_key_reused`), or its first request is still running (`idempotency_in_progress`).
+     */
+    409: ErrorResponse;
+    /**
+     * Refused by a business rule (`price_drop_refused`, `item_not_listed`): see `error.message` and `error.params`.
+     */
+    422: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * The replay guarantee is unavailable (`idempotency_unavailable`): retry later with the same key.
+     */
+    503: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type DropItemPriceError = DropItemPriceErrors[keyof DropItemPriceErrors];
+
+export type DropItemPriceResponses = {
+    /**
+     * The price drop is scheduled on every account named.
+     */
+    202: ScheduledAction;
+};
+
+export type DropItemPriceResponse = DropItemPriceResponses[keyof DropItemPriceResponses];
+
+export type RepublishItemData = {
+    body?: RepublishRequest;
+    headers: {
+        /**
+         * 1 to 255 characters, unique per write: a retry with the same key and the same request answers the first response again (`Idempotent-Replayed: true`), without running the write twice.
+         */
+        'Idempotency-Key': string;
+    };
+    path: {
+        /**
+         * The item's identifier, a number.
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/api/public/v1/items/{id}/republish';
+};
+
+export type RepublishItemErrors = {
+    /**
+     * A malformed request: `bad_request`, `error_body_invalid`, or no `Idempotency-Key` (`idempotency_key_required`).
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:write` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`item_not_found`, `account_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The `Idempotency-Key` was used with another request (`idempotency_key_reused`), or its first request is still running (`idempotency_in_progress`).
+     */
+    409: ErrorResponse;
+    /**
+     * Refused by a business rule (`republish_refused`, `item_not_listed`): see `error.message` and `error.params`.
+     */
+    422: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * The replay guarantee is unavailable (`idempotency_unavailable`): retry later with the same key.
+     */
+    503: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type RepublishItemError = RepublishItemErrors[keyof RepublishItemErrors];
+
+export type RepublishItemResponses = {
+    /**
+     * The republication is scheduled on every account named (or the item is listed on).
+     */
+    202: ScheduledAction;
+};
+
+export type RepublishItemResponse = RepublishItemResponses[keyof RepublishItemResponses];
 
 export type ListConversationsData = {
     body?: never;
@@ -714,3 +1058,155 @@ export type ListConversationMessagesResponses = {
 };
 
 export type ListConversationMessagesResponse = ListConversationMessagesResponses[keyof ListConversationMessagesResponses];
+
+export type SendMessageData = {
+    body: SendMessageRequest;
+    headers: {
+        /**
+         * 1 to 255 characters, unique per write: a retry with the same key and the same request answers the first response again (`Idempotent-Replayed: true`), without running the write twice.
+         */
+        'Idempotency-Key': string;
+    };
+    path: {
+        /**
+         * The conversation's identifier, a UUID.
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/public/v1/conversations/{id}/messages';
+};
+
+export type SendMessageErrors = {
+    /**
+     * A malformed request: `bad_request`, `error_body_invalid`, or no `Idempotency-Key` (`idempotency_key_required`).
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `conversations:write` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`conversation_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The `Idempotency-Key` was used with another request (`idempotency_key_reused`), or its first request is still running (`idempotency_in_progress`).
+     */
+    409: ErrorResponse;
+    /**
+     * Refused by a business rule (`message_not_sent`): see `error.message` and `error.params`.
+     */
+    422: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * The replay guarantee is unavailable (`idempotency_unavailable`): retry later with the same key.
+     */
+    503: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type SendMessageError = SendMessageErrors[keyof SendMessageErrors];
+
+export type SendMessageResponses = {
+    /**
+     * The message, created.
+     */
+    201: Message;
+};
+
+export type SendMessageResponse = SendMessageResponses[keyof SendMessageResponses];
+
+export type SendOfferData = {
+    body: SendOfferRequest;
+    headers: {
+        /**
+         * 1 to 255 characters, unique per write: a retry with the same key and the same request answers the first response again (`Idempotent-Replayed: true`), without running the write twice.
+         */
+        'Idempotency-Key': string;
+    };
+    path: {
+        /**
+         * The conversation's identifier, a UUID.
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/public/v1/conversations/{id}/offers';
+};
+
+export type SendOfferErrors = {
+    /**
+     * A malformed request: `bad_request`, `error_body_invalid`, or no `Idempotency-Key` (`idempotency_key_required`).
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `conversations:write` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`conversation_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The `Idempotency-Key` was used with another request (`idempotency_key_reused`), or its first request is still running (`idempotency_in_progress`).
+     */
+    409: ErrorResponse;
+    /**
+     * Refused by a business rule (`currency_mismatch`, `offer_currency_not_supported`, `message_not_sent`): see `error.message` and `error.params`.
+     */
+    422: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * The replay guarantee is unavailable (`idempotency_unavailable`): retry later with the same key.
+     */
+    503: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type SendOfferError = SendOfferErrors[keyof SendOfferErrors];
+
+export type SendOfferResponses = {
+    /**
+     * The offer's message, created.
+     */
+    201: Message;
+};
+
+export type SendOfferResponse = SendOfferResponses[keyof SendOfferResponses];
