@@ -165,3 +165,44 @@ test('a write keeps the same Idempotency-Key across its retries', async () => {
   assert.equal(keys.length, 2);
   assert.ok(keys[0] && keys[0] === keys[1], String(keys));
 });
+
+test('createItem posts the item with an Idempotency-Key and updateItem patches it without one', async () => {
+  const { requests, sdk } = client((request) => json(item(7), request.method === 'POST' ? 201 : 200));
+  const created = await sdk.items.createItem({ name: 'n' }, { idempotencyKey: 'k1' });
+  const updated = await sdk.items.updateItem(7, { name: 'm' });
+  assert.equal(created.id, 7);
+  assert.equal(updated.id, 7);
+  assert.equal(requests[0].method, 'POST');
+  assert.equal(new URL(requests[0].url).pathname, '/api/public/v1/items');
+  assert.equal(requests[0].headers.get(IDEMPOTENCY_KEY_HEADER), 'k1');
+  assert.equal(requests[1].method, 'PATCH');
+  assert.equal(new URL(requests[1].url).pathname, '/api/public/v1/items/7');
+  assert.deepEqual(await requests[1].clone().json(), { name: 'm' });
+  assert.equal(requests[1].headers.get(IDEMPOTENCY_KEY_HEADER), null);
+});
+
+test('getOrder and listOrderLabels read the order and its labels', async () => {
+  const id = '11111111-1111-1111-1111-111111111111';
+  const { requests, sdk } = client((request) =>
+    request.url.endsWith('/labels') ? json({ data: [], nextCursor: null }) : json({ id }));
+  const order = await sdk.orders.getOrder(id);
+  const labels = await sdk.orders.listOrderLabels(id);
+  assert.equal(order.id, id);
+  assert.deepEqual(labels.data, []);
+  assert.deepEqual(requests.map((r) => new URL(r.url).pathname), [`/api/public/v1/orders/${id}`, `/api/public/v1/orders/${id}/labels`]);
+});
+
+test('orders.listAll follows the cursor with the same filters', async () => {
+  const urls: URL[] = [];
+  const { sdk } = client((request) => {
+    const url = new URL(request.url);
+    urls.push(url);
+    return url.searchParams.get('cursor') ? json({ data: [{ id: 'b' }], nextCursor: null }) : json({ data: [{ id: 'a' }], nextCursor: 'c2' });
+  });
+  const ids: string[] = [];
+  for await (const o of sdk.orders.listAll({ bucket: 'to_send', platform: 'VINTED', limit: 1 })) ids.push(o.id);
+  assert.deepEqual(ids, ['a', 'b']);
+  assert.equal(urls[0].pathname, '/api/public/v1/orders');
+  assert.deepEqual(urls.map((u) => u.searchParams.get('bucket')), ['to_send', 'to_send']);
+  assert.equal(urls[1].searchParams.get('cursor'), 'c2');
+});

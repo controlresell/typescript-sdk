@@ -2,7 +2,7 @@
 
 import { client } from './client.gen.js';
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client/index.js';
-import type { DeleteItemData, DeleteItemErrors, DeleteItemResponses, DropItemPriceData, DropItemPriceErrors, DropItemPriceResponses, GetAccountData, GetAccountErrors, GetAccountResponses, GetConversationData, GetConversationErrors, GetConversationResponses, GetItemData, GetItemErrors, GetItemResponses, GetMeData, GetMeErrors, GetMeResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListConversationMessagesData, ListConversationMessagesErrors, ListConversationMessagesResponses, ListConversationsData, ListConversationsErrors, ListConversationsResponses, ListItemListingsData, ListItemListingsErrors, ListItemListingsResponses, ListItemsData, ListItemsErrors, ListItemsResponses, PublishItemData, PublishItemErrors, PublishItemResponses, RepublishItemData, RepublishItemErrors, RepublishItemResponses, SendMessageData, SendMessageErrors, SendMessageResponses, SendOfferData, SendOfferErrors, SendOfferResponses } from './types.gen.js';
+import type { CreateItemData, CreateItemErrors, CreateItemResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DropItemPriceData, DropItemPriceErrors, DropItemPriceResponses, GetAccountData, GetAccountErrors, GetAccountResponses, GetConversationData, GetConversationErrors, GetConversationResponses, GetItemData, GetItemErrors, GetItemResponses, GetMeData, GetMeErrors, GetMeResponses, GetOrderData, GetOrderErrors, GetOrderResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListConversationMessagesData, ListConversationMessagesErrors, ListConversationMessagesResponses, ListConversationsData, ListConversationsErrors, ListConversationsResponses, ListItemListingsData, ListItemListingsErrors, ListItemListingsResponses, ListItemsData, ListItemsErrors, ListItemsResponses, ListOrderLabelsData, ListOrderLabelsErrors, ListOrderLabelsResponses, ListOrdersData, ListOrdersErrors, ListOrdersResponses, PublishItemData, PublishItemErrors, PublishItemResponses, RepublishItemData, RepublishItemErrors, RepublishItemResponses, SendMessageData, SendMessageErrors, SendMessageResponses, SendOfferData, SendOfferErrors, SendOfferResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses } from './types.gen.js';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -76,6 +76,23 @@ export class Items {
     }
     
     /**
+     * Create an item in the seller's stock
+     *
+     * Creates one item in the seller's ControlResell stock, unsold unless `sold` says otherwise, without publishing it: publish it with `POST /items/{id}/publish`. Only `name` is required. The amounts are `{amount, currency}` in the item's currency (EUR for a new item; another currency is refused with `422 currency_mismatch`). `photoIds` are files already in the seller's library: another seller's, or an unknown one, is `404 photo_not_found`. A label the seller does not have yet is created. Requires `items:write` and an `Idempotency-Key`.
+     */
+    public static createItem<ThrowOnError extends boolean = false>(options: Options<CreateItemData, ThrowOnError>): RequestResult<CreateItemResponses, CreateItemErrors, ThrowOnError> {
+        return (options.client ?? client).post<CreateItemResponses, CreateItemErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/items',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
      * Delete an item from the seller's stock
      *
      * Deletes one item of the seller's stock, with its photos links, labels and history. An item still online on a marketplace is refused (`409 item_still_listed`): its listings would stay online without ControlResell. Requires `items:write`.
@@ -98,6 +115,23 @@ export class Items {
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/public/v1/items/{id}',
             ...options
+        });
+    }
+    
+    /**
+     * Change an item of the seller's stock
+     *
+     * Changes one item of the seller's stock with a JSON merge patch: a field left out keeps its value, a field set to `null` is cleared (not `name`, `sold`, `photoIds`, `colorIds` nor `labels`: send `[]` to empty a list), a list replaces the whole list. It changes the item in ControlResell only, not its listings on the marketplaces. The amounts are `{amount, currency}` in the item's currency (EUR for a new item; another currency is refused with `422 currency_mismatch`). `photoIds` are files already in the seller's library: another seller's, or an unknown one, is `404 photo_not_found`. A label the seller does not have yet is created. Requires `items:write`.
+     */
+    public static updateItem<ThrowOnError extends boolean = false>(options: Options<UpdateItemData, ThrowOnError>): RequestResult<UpdateItemResponses, UpdateItemErrors, ThrowOnError> {
+        return (options.client ?? client).patch<UpdateItemResponses, UpdateItemErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/items/{id}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
         });
     }
     
@@ -239,6 +273,47 @@ export class Conversations {
                 'Content-Type': 'application/json',
                 ...options.headers
             }
+        });
+    }
+}
+
+export class Orders {
+    /**
+     * List the seller's orders
+     *
+     * The seller's sales and purchases, every status, the most recent first (by `date`, then `id`), one page at a time: pass the `nextCursor` of a page as `cursor` to read the next one, with the same filters (a cursor reused with other filters is an `invalid_cursor`). `bucket` narrows the list to the orders to ship or to pick up, as the app's Orders tab shows them. `from` and `to` go straight to a period: `from` is inclusive, `to` exclusive, and the period is read page by page like the whole list. An unknown filter value is a 400 `bad_request`. Requires `orders:read`.
+     */
+    public static listOrders<ThrowOnError extends boolean = false>(options?: Options<ListOrdersData, ThrowOnError>): RequestResult<ListOrdersResponses, ListOrdersErrors, ThrowOnError> {
+        return (options?.client ?? client).get<ListOrdersResponses, ListOrdersErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/orders',
+            ...options
+        });
+    }
+    
+    /**
+     * Read one order
+     *
+     * One sale or purchase of the seller, by its identifier (`GET /orders` lists them). Requires `orders:read`.
+     */
+    public static getOrder<ThrowOnError extends boolean = false>(options: Options<GetOrderData, ThrowOnError>): RequestResult<GetOrderResponses, GetOrderErrors, ThrowOnError> {
+        return (options.client ?? client).get<GetOrderResponses, GetOrderErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/orders/{id}',
+            ...options
+        });
+    }
+    
+    /**
+     * The shipping labels of an order
+     *
+     * The order's shipping labels, in one page (`nextCursor` is `null`). The links are signed and expire: read them again rather than storing them. Requires `orders:read`.
+     */
+    public static listOrderLabels<ThrowOnError extends boolean = false>(options: Options<ListOrderLabelsData, ThrowOnError>): RequestResult<ListOrderLabelsResponses, ListOrderLabelsErrors, ThrowOnError> {
+        return (options.client ?? client).get<ListOrderLabelsResponses, ListOrderLabelsErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/orders/{id}/labels',
+            ...options
         });
     }
 }

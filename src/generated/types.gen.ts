@@ -175,6 +175,52 @@ export type RepublishRequest = {
 };
 
 /**
+ * ItemUpdateRequest
+ */
+export type ItemUpdateRequest = {
+    name?: string | null;
+    sku?: string | null;
+    description?: string | null;
+    photoIds?: Array<string> | null;
+    categoryId?: number | null;
+    brandId?: number | null;
+    sizeId?: number | null;
+    colorIds?: Array<number> | null;
+    state?: number | null;
+    sex?: string | null;
+    labels?: Array<string> | null;
+    sold?: boolean | null;
+    estimatedPrice?: Money | null;
+    purchasePrice?: Money | null;
+    purchaseDate?: string | null;
+    sellingPrice?: Money | null;
+    sellingDate?: string | null;
+};
+
+/**
+ * ItemCreateRequest
+ */
+export type ItemCreateRequest = {
+    name: string;
+    sku?: string | null;
+    description?: string | null;
+    photoIds?: Array<string>;
+    categoryId?: number | null;
+    brandId?: number | null;
+    sizeId?: number | null;
+    colorIds?: Array<number>;
+    state?: number | null;
+    sex?: string | null;
+    labels?: Array<string>;
+    sold?: boolean;
+    estimatedPrice?: Money | null;
+    purchasePrice?: Money | null;
+    purchaseDate?: string | null;
+    sellingPrice?: Money | null;
+    sellingDate?: string | null;
+};
+
+/**
  * Offer
  */
 export type Offer = {
@@ -241,6 +287,64 @@ export type SendMessageRequest = {
 export type SendOfferRequest = {
     price: Money;
     transactionId?: string | null;
+};
+
+/**
+ * OrderItem
+ */
+export type OrderItem = {
+    listingId: string;
+    itemId?: number | null;
+};
+
+/**
+ * Order
+ */
+export type Order = {
+    id: string;
+    accountId: string;
+    type: string;
+    status: string;
+    platformOrderId: string;
+    conversationId?: string | null;
+    transactionId?: string | null;
+    price: Money;
+    platformFee?: Money | null;
+    shippingFee?: Money | null;
+    shippingVat?: Money | null;
+    vatAmount?: Money | null;
+    totalAmount?: Money | null;
+    refundAmount?: Money | null;
+    prepared: boolean;
+    date: string;
+    items: Array<OrderItem>;
+};
+
+/**
+ * OrderPage
+ */
+export type OrderPage = {
+    data: Array<Order>;
+    nextCursor?: string | null;
+};
+
+/**
+ * OrderLabel
+ */
+export type OrderLabel = {
+    id: string;
+    carrier?: string | null;
+    url?: string | null;
+    originalUrl?: string | null;
+    createdAt?: string | null;
+};
+
+/**
+ * OrderLabelPage
+ */
+export type OrderLabelPage = {
+    data: Array<OrderLabel>;
+    nextCursor?: string | null;
 };
 
 export type GetMeData = {
@@ -462,6 +566,77 @@ export type ListItemsResponses = {
 
 export type ListItemsResponse = ListItemsResponses[keyof ListItemsResponses];
 
+export type CreateItemData = {
+    body: ItemCreateRequest;
+    headers: {
+        /**
+         * 1 to 255 characters, unique per write: a retry with the same key and the same request answers the first response again (`Idempotent-Replayed: true`), without running the write twice.
+         */
+        'Idempotency-Key': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/public/v1/items';
+};
+
+export type CreateItemErrors = {
+    /**
+     * A malformed request: `bad_request`, `error_body_invalid`, or no `Idempotency-Key` (`idempotency_key_required`).
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:write` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`photo_not_found`, `brand_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The `Idempotency-Key` was used with another request (`idempotency_key_reused`), or its first request is still running (`idempotency_in_progress`).
+     */
+    409: ErrorResponse;
+    /**
+     * Refused by a business rule (`currency_mismatch`): see `error.message` and `error.params`.
+     */
+    422: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * The replay guarantee is unavailable (`idempotency_unavailable`): retry later with the same key.
+     */
+    503: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type CreateItemError = CreateItemErrors[keyof CreateItemErrors];
+
+export type CreateItemResponses = {
+    /**
+     * The item, created; `Location` is its address.
+     */
+    201: Item;
+};
+
+export type CreateItemResponse = CreateItemResponses[keyof CreateItemResponses];
+
 export type DeleteItemData = {
     body?: never;
     path: {
@@ -581,6 +756,68 @@ export type GetItemResponses = {
 };
 
 export type GetItemResponse = GetItemResponses[keyof GetItemResponses];
+
+export type UpdateItemData = {
+    body: ItemUpdateRequest;
+    path: {
+        /**
+         * The item's identifier, a number.
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/api/public/v1/items/{id}';
+};
+
+export type UpdateItemErrors = {
+    /**
+     * A malformed request: `bad_request`, `error_body_invalid`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:write` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`item_not_found`, `photo_not_found`, `brand_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * Refused by a business rule (`currency_mismatch`): see `error.message` and `error.params`.
+     */
+    422: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type UpdateItemError = UpdateItemErrors[keyof UpdateItemErrors];
+
+export type UpdateItemResponses = {
+    /**
+     * The item, changed.
+     */
+    200: Item;
+};
+
+export type UpdateItemResponse = UpdateItemResponses[keyof UpdateItemResponses];
 
 export type ListItemListingsData = {
     body?: never;
@@ -1210,3 +1447,197 @@ export type SendOfferResponses = {
 };
 
 export type SendOfferResponse = SendOfferResponses[keyof SendOfferResponses];
+
+export type ListOrdersData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+        /**
+         * `to_send`: the sales to ship (with their label, or paid on a marketplace that ships without one); `to_pickup`: the purchases waiting at a pickup point. Every order when absent.
+         */
+        bucket?: string;
+        /**
+         * Only the orders of the seller's accounts on this marketplace, as `GET /accounts` names it (`VINTED`, `SHOPIFY`, `EBAY`...).
+         */
+        platform?: string;
+        /**
+         * Only the orders of this marketplace account (`GET /accounts`).
+         */
+        accountId?: string;
+        /**
+         * Only the orders dated at or after this instant (inclusive), ISO-8601 with its offset, such as `2026-10-01T00:00:00Z`.
+         */
+        from?: string;
+        /**
+         * Only the orders dated before this instant (exclusive), ISO-8601 with its offset; after `from`.
+         */
+        to?: string;
+    };
+    url: '/api/public/v1/orders';
+};
+
+export type ListOrdersErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `orders:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListOrdersError = ListOrdersErrors[keyof ListOrdersErrors];
+
+export type ListOrdersResponses = {
+    /**
+     * A page of orders.
+     */
+    200: OrderPage;
+};
+
+export type ListOrdersResponse = ListOrdersResponses[keyof ListOrdersResponses];
+
+export type GetOrderData = {
+    body?: never;
+    path: {
+        /**
+         * The order's identifier, a UUID.
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/public/v1/orders/{id}';
+};
+
+export type GetOrderErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `orders:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`order_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type GetOrderError = GetOrderErrors[keyof GetOrderErrors];
+
+export type GetOrderResponses = {
+    /**
+     * The order.
+     */
+    200: Order;
+};
+
+export type GetOrderResponse = GetOrderResponses[keyof GetOrderResponses];
+
+export type ListOrderLabelsData = {
+    body?: never;
+    path: {
+        /**
+         * The order's identifier, a UUID.
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/public/v1/orders/{id}/labels';
+};
+
+export type ListOrderLabelsErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `orders:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`order_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListOrderLabelsError = ListOrderLabelsErrors[keyof ListOrderLabelsErrors];
+
+export type ListOrderLabelsResponses = {
+    /**
+     * The order's labels.
+     */
+    200: OrderLabelPage;
+};
+
+export type ListOrderLabelsResponse = ListOrderLabelsResponses[keyof ListOrderLabelsResponses];
