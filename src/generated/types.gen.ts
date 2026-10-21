@@ -290,6 +290,37 @@ export type SendOfferRequest = {
 };
 
 /**
+ * CustomerAddress
+ */
+export type CustomerAddress = {
+    line1?: string | null;
+    line2?: string | null;
+    city?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
+};
+
+/**
+ * Customer
+ */
+export type Customer = {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email?: string | null;
+    address: CustomerAddress;
+    createdAt: string;
+};
+
+/**
+ * CustomerPage
+ */
+export type CustomerPage = {
+    data: Array<Customer>;
+    nextCursor?: string | null;
+};
+
+/**
  * OrderLabel
  */
 export type OrderLabel = {
@@ -1464,6 +1495,134 @@ export type SendOfferResponses = {
 };
 
 export type SendOfferResponse = SendOfferResponses[keyof SendOfferResponses];
+
+export type ListCustomersData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+        /**
+         * Only the customers created at or after this instant (inclusive), ISO-8601 with its offset, such as `2026-10-01T00:00:00Z`.
+         */
+        from?: string;
+        /**
+         * Only the customers created before this instant (exclusive), ISO-8601 with its offset; after `from`.
+         */
+        to?: string;
+        /**
+         * Only the customers of an order on this marketplace account (`GET /accounts`).
+         */
+        accountId?: string;
+    };
+    url: '/api/public/v1/customers';
+};
+
+export type ListCustomersErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `customers:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListCustomersError = ListCustomersErrors[keyof ListCustomersErrors];
+
+export type ListCustomersResponses = {
+    /**
+     * A page of customers.
+     */
+    200: CustomerPage;
+};
+
+export type ListCustomersResponse = ListCustomersResponses[keyof ListCustomersResponses];
+
+export type GetCustomerData = {
+    body?: never;
+    path: {
+        /**
+         * The customer's identifier, a UUID.
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/public/v1/customers/{id}';
+};
+
+export type GetCustomerErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `customers:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`customer_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type GetCustomerError = GetCustomerErrors[keyof GetCustomerErrors];
+
+export type GetCustomerResponses = {
+    /**
+     * The customer.
+     */
+    200: Customer;
+};
+
+export type GetCustomerResponse = GetCustomerResponses[keyof GetCustomerResponses];
 
 export type ListLabelsToShipData = {
     body?: never;

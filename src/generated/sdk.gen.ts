@@ -2,7 +2,7 @@
 
 import { client } from './client.gen.js';
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client/index.js';
-import type { CreateItemData, CreateItemErrors, CreateItemResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DropItemPriceData, DropItemPriceErrors, DropItemPriceResponses, GetAccountData, GetAccountErrors, GetAccountResponses, GetConversationData, GetConversationErrors, GetConversationResponses, GetItemData, GetItemErrors, GetItemResponses, GetMeData, GetMeErrors, GetMeResponses, GetOrderData, GetOrderErrors, GetOrderResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListConversationMessagesData, ListConversationMessagesErrors, ListConversationMessagesResponses, ListConversationsData, ListConversationsErrors, ListConversationsResponses, ListItemListingsData, ListItemListingsErrors, ListItemListingsResponses, ListItemsData, ListItemsErrors, ListItemsResponses, ListLabelsToShipData, ListLabelsToShipErrors, ListLabelsToShipResponses, ListOrderLabelsData, ListOrderLabelsErrors, ListOrderLabelsResponses, ListOrdersData, ListOrdersErrors, ListOrdersResponses, PublishItemData, PublishItemErrors, PublishItemResponses, RepublishItemData, RepublishItemErrors, RepublishItemResponses, SendMessageData, SendMessageErrors, SendMessageResponses, SendOfferData, SendOfferErrors, SendOfferResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses } from './types.gen.js';
+import type { CreateItemData, CreateItemErrors, CreateItemResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DropItemPriceData, DropItemPriceErrors, DropItemPriceResponses, GetAccountData, GetAccountErrors, GetAccountResponses, GetConversationData, GetConversationErrors, GetConversationResponses, GetCustomerData, GetCustomerErrors, GetCustomerResponses, GetItemData, GetItemErrors, GetItemResponses, GetMeData, GetMeErrors, GetMeResponses, GetOrderData, GetOrderErrors, GetOrderResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListConversationMessagesData, ListConversationMessagesErrors, ListConversationMessagesResponses, ListConversationsData, ListConversationsErrors, ListConversationsResponses, ListCustomersData, ListCustomersErrors, ListCustomersResponses, ListItemListingsData, ListItemListingsErrors, ListItemListingsResponses, ListItemsData, ListItemsErrors, ListItemsResponses, ListLabelsToShipData, ListLabelsToShipErrors, ListLabelsToShipResponses, ListOrderLabelsData, ListOrderLabelsErrors, ListOrderLabelsResponses, ListOrdersData, ListOrdersErrors, ListOrdersResponses, PublishItemData, PublishItemErrors, PublishItemResponses, RepublishItemData, RepublishItemErrors, RepublishItemResponses, SendMessageData, SendMessageErrors, SendMessageResponses, SendOfferData, SendOfferErrors, SendOfferResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses } from './types.gen.js';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -273,6 +273,34 @@ export class Conversations {
                 'Content-Type': 'application/json',
                 ...options.headers
             }
+        });
+    }
+}
+
+export class Customers {
+    /**
+     * List the seller's customers
+     *
+     * The other parties of the seller's sales and purchases, as written on their invoices: a customer is created with the invoice of its first order. The most recently created first (by `createdAt`, then `id`), one page at a time: pass the `nextCursor` of a page as `cursor` to read the next one, with the same filters (a cursor reused with other filters is an `invalid_cursor`). `from` and `to` go straight to a period of creation: `from` is inclusive, `to` exclusive. Requires `customers:read`.
+     */
+    public static listCustomers<ThrowOnError extends boolean = false>(options?: Options<ListCustomersData, ThrowOnError>): RequestResult<ListCustomersResponses, ListCustomersErrors, ThrowOnError> {
+        return (options?.client ?? client).get<ListCustomersResponses, ListCustomersErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/customers',
+            ...options
+        });
+    }
+    
+    /**
+     * Read one customer
+     *
+     * One customer of the seller, by its identifier (`GET /customers` lists them). Requires `customers:read`.
+     */
+    public static getCustomer<ThrowOnError extends boolean = false>(options: Options<GetCustomerData, ThrowOnError>): RequestResult<GetCustomerResponses, GetCustomerErrors, ThrowOnError> {
+        return (options.client ?? client).get<GetCustomerResponses, GetCustomerErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/customers/{id}',
+            ...options
         });
     }
 }

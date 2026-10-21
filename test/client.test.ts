@@ -223,6 +223,29 @@ test('orders.listAllLabelsToShip follows the cursor on /orders/labels', async ()
   assert.equal(urls[1].searchParams.get('cursor'), 'c2');
 });
 
+test('customers.listAll follows the cursor with the same filters', async () => {
+  const urls: URL[] = [];
+  const { sdk } = client((request) => {
+    const url = new URL(request.url);
+    urls.push(url);
+    return url.searchParams.get('cursor') ? json({ data: [{ id: 'b' }], nextCursor: null }) : json({ data: [{ id: 'a' }], nextCursor: 'c2' });
+  });
+  const ids: string[] = [];
+  for await (const c of sdk.customers.listAll({ from: '2026-10-01T00:00:00Z', accountId: 'acc', limit: 1 })) ids.push(c.id);
+  assert.deepEqual(ids, ['a', 'b']);
+  assert.equal(urls[0].pathname, '/api/public/v1/customers');
+  assert.deepEqual(urls.map((u) => u.searchParams.get('from')), ['2026-10-01T00:00:00Z', '2026-10-01T00:00:00Z']);
+  assert.deepEqual(urls.map((u) => u.searchParams.get('accountId')), ['acc', 'acc']);
+  assert.equal(urls[1].searchParams.get('cursor'), 'c2');
+});
+
+test('customers.getCustomer reads one customer', async () => {
+  const id = '11111111-1111-1111-1111-111111111111';
+  const { requests, sdk } = client(() => json({ id }));
+  assert.equal((await sdk.customers.getCustomer(id)).id, id);
+  assert.equal(new URL(requests[0].url).pathname, `/api/public/v1/customers/${id}`);
+});
+
 test('conversations.listConversationMessages sends the from and to window', async () => {
   const { requests, sdk } = client(() => json({ data: [], nextCursor: null }));
   await sdk.conversations.listConversationMessages('c1', { from: '2026-10-01T00:00:00Z', to: '2026-10-02T00:00:00Z' });
