@@ -1,7 +1,8 @@
 import { type Client, createClient } from './generated/client/index.js';
 import { Accounts, Conversations, Items, Me } from './generated/sdk.gen.js';
 import type {
-  ListAccountsData, ListConversationMessagesData, ListConversationsData, ListItemsData,
+  DropItemPriceData, ListAccountsData, ListConversationMessagesData, ListConversationsData, ListItemsData,
+  PublishItemData, RepublishItemData, SendMessageData, SendOfferData,
 } from './generated/types.gen.js';
 import { ConnectionError, errorOf } from './errors.js';
 import { retryingFetch, type RetryPolicy } from './fetch.js';
@@ -33,6 +34,15 @@ export interface ControlResellOptions {
 }
 
 type Query<T extends { query?: unknown }> = NonNullable<T['query']>;
+
+/** The options of a write: the `Idempotency-Key` to use (a random one by default, kept across the retries). */
+export interface WriteOptions {
+  idempotencyKey?: string;
+}
+
+const idempotency = (options?: WriteOptions) => ({
+  'Idempotency-Key': options?.idempotencyKey ?? globalThis.crypto.randomUUID(),
+});
 
 /**
  * A client of the ControlResell public API, for one API key.
@@ -80,6 +90,17 @@ export class ControlResell {
     listItems: (query?: Query<ListItemsData>) => this.call(Items.listItems({ client: this.client, query })),
     getItem: (id: number) => this.call(Items.getItem({ client: this.client, path: { id } })),
     listItemListings: (id: number) => this.call(Items.listItemListings({ client: this.client, path: { id } })),
+    /** Deletes an item of the stock; an item still online is refused (`409 item_still_listed`). */
+    deleteItem: (id: number) => this.callEmpty(Items.deleteItem({ client: this.client, path: { id } })),
+    /** Schedules the publication of an item on the given accounts. */
+    publishItem: (id: number, body: PublishItemData['body'], options?: WriteOptions) =>
+      this.call(Items.publishItem({ client: this.client, path: { id }, body, headers: idempotency(options) })),
+    /** Schedules a price drop of the item's listings. */
+    dropItemPrice: (id: number, body: DropItemPriceData['body'], options?: WriteOptions) =>
+      this.call(Items.dropItemPrice({ client: this.client, path: { id }, body, headers: idempotency(options) })),
+    /** Schedules the republication of an item. */
+    republishItem: (id: number, body: RepublishItemData['body'] = {}, options?: WriteOptions) =>
+      this.call(Items.republishItem({ client: this.client, path: { id }, body, headers: idempotency(options) })),
     listAll: (query?: Omit<Query<ListItemsData>, 'cursor'>) =>
       paginate((cursor) => this.items.listItems({ ...query, cursor })),
   };
@@ -91,11 +112,23 @@ export class ControlResell {
     getConversation: (id: string) => this.call(Conversations.getConversation({ client: this.client, path: { id } })),
     listConversationMessages: (id: string, query?: Query<ListConversationMessagesData>) =>
       this.call(Conversations.listConversationMessages({ client: this.client, path: { id }, query })),
+    /** Sends a message to the buyer. */
+    sendMessage: (id: string, body: SendMessageData['body'], options?: WriteOptions) =>
+      this.call(Conversations.sendMessage({ client: this.client, path: { id }, body, headers: idempotency(options) })),
+    /** Sends the buyer an offer. */
+    sendOffer: (id: string, body: SendOfferData['body'], options?: WriteOptions) =>
+      this.call(Conversations.sendOffer({ client: this.client, path: { id }, body, headers: idempotency(options) })),
     listAll: (query?: Omit<Query<ListConversationsData>, 'cursor'>) =>
       paginate((cursor) => this.conversations.listConversations({ ...query, cursor })),
     listAllMessages: (id: string, query?: Omit<Query<ListConversationMessagesData>, 'cursor'>) =>
       paginate((cursor) => this.conversations.listConversationMessages(id, { ...query, cursor })),
   };
+
+  private async callEmpty(result: Promise<{ error?: unknown; response?: Response }>): Promise<void> {
+    const { error, response } = await result;
+    if (!response) throw error instanceof Error ? error : new ConnectionError(error);
+    if (!response.ok) throw errorOf(response, error);
+  }
 
   private async call<T>(result: Promise<{ data?: T; error?: unknown; response?: Response }>): Promise<T> {
     const { data, error, response } = await result;
