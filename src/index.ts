@@ -1,7 +1,7 @@
 import { type Client, createClient } from './generated/client/index.js';
-import { Accounts, Conversations, Items, Me, Orders } from './generated/sdk.gen.js';
+import { Accounts, Conversations, Customers, Items, Me, Orders } from './generated/sdk.gen.js';
 import type {
-  CreateItemData, DropItemPriceData, ListAccountsData, ListConversationMessagesData, ListConversationsData, ListItemsData,
+  CreateItemData, DropItemPriceData, ListAccountsData, ListConversationMessagesData, ListConversationsData, ListCustomersData, ListItemsData,
   ListLabelsToShipData, ListOrdersData, PublishItemData, RepublishItemData, SendMessageData, SendOfferData, UpdateItemData,
 } from './generated/types.gen.js';
 import { ConnectionError, errorOf } from './errors.js';
@@ -143,6 +143,15 @@ export class ControlResell {
       paginate((cursor) => this.orders.listOrders({ ...query, cursor })),
     listAllLabelsToShip: (query?: Omit<Query<ListLabelsToShipData>, 'cursor'>) =>
       paginate((cursor) => this.orders.listLabelsToShip({ ...query, cursor })),
+  };
+
+  /** The other parties of the seller's sales and purchases (needs the `customers:read` scope). */
+  readonly customers = {
+    listCustomers: (query?: Query<ListCustomersData>) =>
+      this.call(Customers.listCustomers({ client: this.client, query })),
+    getCustomer: (id: string) => this.call(Customers.getCustomer({ client: this.client, path: { id } })),
+    listAll: (query?: Omit<Query<ListCustomersData>, 'cursor'>) =>
+      paginate((cursor) => this.customers.listCustomers({ ...query, cursor })),
   };
 
   private async callEmpty(result: Promise<{ error?: unknown; response?: Response }>): Promise<void> {
