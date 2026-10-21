@@ -1,8 +1,8 @@
 import { type Client, createClient } from './generated/client/index.js';
-import { Accounts, Conversations, Items, Me } from './generated/sdk.gen.js';
+import { Accounts, Conversations, Items, Me, Orders } from './generated/sdk.gen.js';
 import type {
-  DropItemPriceData, ListAccountsData, ListConversationMessagesData, ListConversationsData, ListItemsData,
-  PublishItemData, RepublishItemData, SendMessageData, SendOfferData,
+  CreateItemData, DropItemPriceData, ListAccountsData, ListConversationMessagesData, ListConversationsData, ListItemsData,
+  ListOrdersData, PublishItemData, RepublishItemData, SendMessageData, SendOfferData, UpdateItemData,
 } from './generated/types.gen.js';
 import { ConnectionError, errorOf } from './errors.js';
 import { retryingFetch, type RetryPolicy } from './fetch.js';
@@ -90,6 +90,12 @@ export class ControlResell {
     listItems: (query?: Query<ListItemsData>) => this.call(Items.listItems({ client: this.client, query })),
     getItem: (id: number) => this.call(Items.getItem({ client: this.client, path: { id } })),
     listItemListings: (id: number) => this.call(Items.listItemListings({ client: this.client, path: { id } })),
+    /** Creates an item in the stock (an `Idempotency-Key` is sent, and kept across the retries). */
+    createItem: (body: CreateItemData['body'], options?: WriteOptions) =>
+      this.call(Items.createItem({ client: this.client, body, headers: idempotency(options) })),
+    /** Updates the given fields of an item (a `PATCH`: the fields left out are kept). */
+    updateItem: (id: number, body: UpdateItemData['body']) =>
+      this.call(Items.updateItem({ client: this.client, path: { id }, body })),
     /** Deletes an item of the stock; an item still online is refused (`409 item_still_listed`). */
     deleteItem: (id: number) => this.callEmpty(Items.deleteItem({ client: this.client, path: { id } })),
     /** Schedules the publication of an item on the given accounts. */
@@ -122,6 +128,16 @@ export class ControlResell {
       paginate((cursor) => this.conversations.listConversations({ ...query, cursor })),
     listAllMessages: (id: string, query?: Omit<Query<ListConversationMessagesData>, 'cursor'>) =>
       paginate((cursor) => this.conversations.listConversationMessages(id, { ...query, cursor })),
+  };
+
+  /** The seller's orders (sales and purchases). */
+  readonly orders = {
+    listOrders: (query?: Query<ListOrdersData>) => this.call(Orders.listOrders({ client: this.client, query })),
+    getOrder: (id: string) => this.call(Orders.getOrder({ client: this.client, path: { id } })),
+    /** The shipping labels of an order. */
+    listOrderLabels: (id: string) => this.call(Orders.listOrderLabels({ client: this.client, path: { id } })),
+    listAll: (query?: Omit<Query<ListOrdersData>, 'cursor'>) =>
+      paginate((cursor) => this.orders.listOrders({ ...query, cursor })),
   };
 
   private async callEmpty(result: Promise<{ error?: unknown; response?: Response }>): Promise<void> {
