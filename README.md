@@ -8,7 +8,7 @@ import { ControlResell } from 'controlresell';
 const client = new ControlResell({ apiKey: 'cr_live_...' }); // or set CONTROLRESELL_API_KEY
 const me = await client.me.getMe();
 for await (const item of client.items.listAll({ sold: false })) console.log(item.name);
-for await (const order of client.orders.listAll({ bucket: 'to_send' })) console.log(order.id); // client.orders.getOrder(id), listOrderLabels(id)
+for await (const order of client.orders.listAll({ bucket: 'to_send' })) console.log(order.id); // needs the orders:read scope; also client.orders.getOrder(id), listOrderLabels(id)
 
 // Writes (API key with `items:write` / `conversations:write`); pass `{ idempotencyKey }` to choose the key.
 await client.items.publishItem(42, { accountIds: ['<account id>'] });
