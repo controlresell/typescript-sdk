@@ -2,7 +2,7 @@ import { type Client, createClient } from './generated/client/index.js';
 import { Accounts, Conversations, Items, Me, Orders } from './generated/sdk.gen.js';
 import type {
   CreateItemData, DropItemPriceData, ListAccountsData, ListConversationMessagesData, ListConversationsData, ListItemsData,
-  ListOrdersData, PublishItemData, RepublishItemData, SendMessageData, SendOfferData, UpdateItemData,
+  ListLabelsToShipData, ListOrdersData, PublishItemData, RepublishItemData, SendMessageData, SendOfferData, UpdateItemData,
 } from './generated/types.gen.js';
 import { ConnectionError, errorOf } from './errors.js';
 import { retryingFetch, type RetryPolicy } from './fetch.js';
@@ -136,8 +136,13 @@ export class ControlResell {
     getOrder: (id: string) => this.call(Orders.getOrder({ client: this.client, path: { id } })),
     /** The shipping labels of an order. */
     listOrderLabels: (id: string) => this.call(Orders.listOrderLabels({ client: this.client, path: { id } })),
+    /** The labels still to ship, over all the seller's orders (each label names its `orderId`). */
+    listLabelsToShip: (query?: Query<ListLabelsToShipData>) =>
+      this.call(Orders.listLabelsToShip({ client: this.client, query })),
     listAll: (query?: Omit<Query<ListOrdersData>, 'cursor'>) =>
       paginate((cursor) => this.orders.listOrders({ ...query, cursor })),
+    listAllLabelsToShip: (query?: Omit<Query<ListLabelsToShipData>, 'cursor'>) =>
+      paginate((cursor) => this.orders.listLabelsToShip({ ...query, cursor })),
   };
 
   private async callEmpty(result: Promise<{ error?: unknown; response?: Response }>): Promise<void> {

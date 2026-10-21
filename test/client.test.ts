@@ -206,3 +206,27 @@ test('orders.listAll follows the cursor with the same filters', async () => {
   assert.deepEqual(urls.map((u) => u.searchParams.get('bucket')), ['to_send', 'to_send']);
   assert.equal(urls[1].searchParams.get('cursor'), 'c2');
 });
+
+test('orders.listAllLabelsToShip follows the cursor on /orders/labels', async () => {
+  const urls: URL[] = [];
+  const { sdk } = client((request) => {
+    const url = new URL(request.url);
+    urls.push(url);
+    return url.searchParams.get('cursor')
+      ? json({ data: [{ id: 'l2', orderId: 'o2' }], nextCursor: null })
+      : json({ data: [{ id: 'l1', orderId: 'o1' }], nextCursor: 'c2' });
+  });
+  const orders: string[] = [];
+  for await (const label of sdk.orders.listAllLabelsToShip({ limit: 1 })) orders.push(label.orderId);
+  assert.deepEqual(orders, ['o1', 'o2']);
+  assert.equal(urls[0].pathname, '/api/public/v1/orders/labels');
+  assert.equal(urls[1].searchParams.get('cursor'), 'c2');
+});
+
+test('conversations.listConversationMessages sends the from and to window', async () => {
+  const { requests, sdk } = client(() => json({ data: [], nextCursor: null }));
+  await sdk.conversations.listConversationMessages('c1', { from: '2026-10-01T00:00:00Z', to: '2026-10-02T00:00:00Z' });
+  const url = new URL(requests[0].url);
+  assert.equal(url.searchParams.get('from'), '2026-10-01T00:00:00Z');
+  assert.equal(url.searchParams.get('to'), '2026-10-02T00:00:00Z');
+});
