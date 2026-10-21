@@ -2,7 +2,7 @@
 
 import { client } from './client.gen.js';
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client/index.js';
-import type { CreateItemData, CreateItemErrors, CreateItemResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DropItemPriceData, DropItemPriceErrors, DropItemPriceResponses, GetAccountData, GetAccountErrors, GetAccountResponses, GetConversationData, GetConversationErrors, GetConversationResponses, GetItemData, GetItemErrors, GetItemResponses, GetMeData, GetMeErrors, GetMeResponses, GetOrderData, GetOrderErrors, GetOrderResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListConversationMessagesData, ListConversationMessagesErrors, ListConversationMessagesResponses, ListConversationsData, ListConversationsErrors, ListConversationsResponses, ListItemListingsData, ListItemListingsErrors, ListItemListingsResponses, ListItemsData, ListItemsErrors, ListItemsResponses, ListOrderLabelsData, ListOrderLabelsErrors, ListOrderLabelsResponses, ListOrdersData, ListOrdersErrors, ListOrdersResponses, PublishItemData, PublishItemErrors, PublishItemResponses, RepublishItemData, RepublishItemErrors, RepublishItemResponses, SendMessageData, SendMessageErrors, SendMessageResponses, SendOfferData, SendOfferErrors, SendOfferResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses } from './types.gen.js';
+import type { CreateItemData, CreateItemErrors, CreateItemResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DropItemPriceData, DropItemPriceErrors, DropItemPriceResponses, GetAccountData, GetAccountErrors, GetAccountResponses, GetConversationData, GetConversationErrors, GetConversationResponses, GetItemData, GetItemErrors, GetItemResponses, GetMeData, GetMeErrors, GetMeResponses, GetOrderData, GetOrderErrors, GetOrderResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListConversationMessagesData, ListConversationMessagesErrors, ListConversationMessagesResponses, ListConversationsData, ListConversationsErrors, ListConversationsResponses, ListItemListingsData, ListItemListingsErrors, ListItemListingsResponses, ListItemsData, ListItemsErrors, ListItemsResponses, ListLabelsToShipData, ListLabelsToShipErrors, ListLabelsToShipResponses, ListOrderLabelsData, ListOrderLabelsErrors, ListOrderLabelsResponses, ListOrdersData, ListOrdersErrors, ListOrdersResponses, PublishItemData, PublishItemErrors, PublishItemResponses, RepublishItemData, RepublishItemErrors, RepublishItemResponses, SendMessageData, SendMessageErrors, SendMessageResponses, SendOfferData, SendOfferErrors, SendOfferResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses } from './types.gen.js';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -206,7 +206,7 @@ export class Conversations {
     /**
      * List the seller's conversations
      *
-     * The conversations with buyers on the seller's marketplace accounts, latest activity first, one page at a time. A conversation that receives a message while you read moves to the head: read again from the first page to see it. Requires `conversations:read`.
+     * The conversations with buyers on the seller's marketplace accounts, latest activity first, one page at a time. A conversation that receives a message while you read moves to the head: read again from the first page to see it. Pass the `nextCursor` of a page as `cursor` with the same filters (a cursor reused with other filters is an `invalid_cursor`). `from` and `to` go straight to a period of the last message: `from` is inclusive, `to` exclusive, and the period is read page by page like the whole list. Requires `conversations:read`.
      */
     public static listConversations<ThrowOnError extends boolean = false>(options?: Options<ListConversationsData, ThrowOnError>): RequestResult<ListConversationsResponses, ListConversationsErrors, ThrowOnError> {
         return (options?.client ?? client).get<ListConversationsResponses, ListConversationsErrors, ThrowOnError>({
@@ -232,7 +232,7 @@ export class Conversations {
     /**
      * List the messages of a conversation
      *
-     * The messages of one conversation, oldest first, one page at a time: at most its 1 000 most recent messages. Requires `conversations:read`.
+     * The messages of one conversation, oldest first, one page at a time: at most its 1 000 most recent messages (of the period, with `from` or `to`). Pass the `nextCursor` of a page as `cursor` with the same `from` and `to` (a cursor reused with others is an `invalid_cursor`). `from` and `to` go straight to a period: `from` is inclusive, `to` exclusive. Requires `conversations:read`.
      */
     public static listConversationMessages<ThrowOnError extends boolean = false>(options: Options<ListConversationMessagesData, ThrowOnError>): RequestResult<ListConversationMessagesResponses, ListConversationMessagesErrors, ThrowOnError> {
         return (options.client ?? client).get<ListConversationMessagesResponses, ListConversationMessagesErrors, ThrowOnError>({
@@ -278,6 +278,19 @@ export class Conversations {
 }
 
 export class Orders {
+    /**
+     * List the shipping labels still to ship
+     *
+     * The shipping labels of the seller's orders waiting to be shipped (label ordered or sent to the seller, order not marked prepared), oldest order first, one page at a time. Each label names its order. The links are signed and expire: read them again rather than storing them. Requires `orders:read`.
+     */
+    public static listLabelsToShip<ThrowOnError extends boolean = false>(options?: Options<ListLabelsToShipData, ThrowOnError>): RequestResult<ListLabelsToShipResponses, ListLabelsToShipErrors, ThrowOnError> {
+        return (options?.client ?? client).get<ListLabelsToShipResponses, ListLabelsToShipErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/orders/labels',
+            ...options
+        });
+    }
+    
     /**
      * List the seller's orders
      *

@@ -290,6 +290,26 @@ export type SendOfferRequest = {
 };
 
 /**
+ * OrderLabel
+ */
+export type OrderLabel = {
+    id: string;
+    orderId: string;
+    carrier?: string | null;
+    url?: string | null;
+    originalUrl?: string | null;
+    createdAt?: string | null;
+};
+
+/**
+ * OrderLabelPage
+ */
+export type OrderLabelPage = {
+    data: Array<OrderLabel>;
+    nextCursor?: string | null;
+};
+
+/**
  * OrderItem
  */
 export type OrderItem = {
@@ -325,25 +345,6 @@ export type Order = {
  */
 export type OrderPage = {
     data: Array<Order>;
-    nextCursor?: string | null;
-};
-
-/**
- * OrderLabel
- */
-export type OrderLabel = {
-    id: string;
-    carrier?: string | null;
-    url?: string | null;
-    originalUrl?: string | null;
-    createdAt?: string | null;
-};
-
-/**
- * OrderLabelPage
- */
-export type OrderLabelPage = {
-    data: Array<OrderLabel>;
     nextCursor?: string | null;
 };
 
@@ -1125,6 +1126,14 @@ export type ListConversationsData = {
          * Only the conversations of this marketplace account (`GET /accounts`).
          */
         accountId?: string;
+        /**
+         * Only the conversations whose last message is at or after this instant (inclusive), ISO-8601 with its offset, such as `2026-10-01T00:00:00Z`.
+         */
+        from?: string;
+        /**
+         * Only the conversations whose last message is before this instant (exclusive), ISO-8601 with its offset; after `from`.
+         */
+        to?: string;
     };
     url: '/api/public/v1/conversations';
 };
@@ -1246,6 +1255,14 @@ export type ListConversationMessagesData = {
          * The `nextCursor` of the previous page.
          */
         cursor?: string;
+        /**
+         * Only the messages created at or after this instant (inclusive), ISO-8601 with its offset, such as `2026-10-01T00:00:00Z`.
+         */
+        from?: string;
+        /**
+         * Only the messages created before this instant (exclusive), ISO-8601 with its offset; after `from`.
+         */
+        to?: string;
     };
     url: '/api/public/v1/conversations/{id}/messages';
 };
@@ -1447,6 +1464,64 @@ export type SendOfferResponses = {
 };
 
 export type SendOfferResponse = SendOfferResponses[keyof SendOfferResponses];
+
+export type ListLabelsToShipData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+    };
+    url: '/api/public/v1/orders/labels';
+};
+
+export type ListLabelsToShipErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `orders:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListLabelsToShipError = ListLabelsToShipErrors[keyof ListLabelsToShipErrors];
+
+export type ListLabelsToShipResponses = {
+    /**
+     * A page of labels.
+     */
+    200: OrderLabelPage;
+};
+
+export type ListLabelsToShipResponse = ListLabelsToShipResponses[keyof ListLabelsToShipResponses];
 
 export type ListOrdersData = {
     body?: never;
