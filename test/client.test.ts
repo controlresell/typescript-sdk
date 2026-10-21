@@ -152,3 +152,16 @@ test('sendMessage and sendOffer post to the conversation', async () => {
   assert.deepEqual(requests.map((r) => new URL(r.url).pathname), ['/api/public/v1/conversations/c1/messages', '/api/public/v1/conversations/c1/offers']);
   assert.deepEqual(await requests[1].clone().json(), { price: { amount: '12.50', currency: 'EUR' } });
 });
+
+test('a write keeps the same Idempotency-Key across its retries', async () => {
+  const keys: Array<string | null> = [];
+  const { sdk } = client((request) => {
+    keys.push(request.headers.get(IDEMPOTENCY_KEY_HEADER));
+    return keys.length < 2
+      ? json(envelope('idempotency_unavailable'), 503)
+      : json({ id: 'm1', conversationId: 'c1', author: 'SELLER', type: 'TEXT', status: 'SENT', createdAt: '2026-10-21T10:00:00Z' }, 201);
+  });
+  await sdk.conversations.sendMessage('c1', { text: 'hi' });
+  assert.equal(keys.length, 2);
+  assert.ok(keys[0] && keys[0] === keys[1], String(keys));
+});
