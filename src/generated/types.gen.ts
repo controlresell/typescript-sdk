@@ -75,6 +75,30 @@ export type ItemPhoto = {
 };
 
 /**
+ * ItemEnumValue
+ */
+export type ItemEnumValue = {
+    enumKey: string;
+    enumValue: string;
+};
+
+/**
+ * ItemAttribute
+ */
+export type ItemAttribute = {
+    fieldKey: string;
+    value: string;
+};
+
+/**
+ * ItemCustomField
+ */
+export type ItemCustomField = {
+    fieldId: number;
+    value: string;
+};
+
+/**
  * Item
  */
 export type Item = {
@@ -91,11 +115,20 @@ export type Item = {
     sex?: string | null;
     labels: Array<string>;
     sold: boolean;
+    packageSizeId?: number | null;
+    materialIds: Array<number>;
+    measurementLength?: number | null;
+    measurementWidth?: number | null;
+    enumValues: Array<ItemEnumValue>;
+    attributes: Array<ItemAttribute>;
+    customFields: Array<ItemCustomField>;
     estimatedPrice?: Money | null;
     purchasePrice?: Money | null;
     purchaseDate?: string | null;
+    purchasePlaceId?: number | null;
     sellingPrice?: Money | null;
     sellingDate?: string | null;
+    sellingPlaceId?: number | null;
     createdAt: string;
     updatedAt: string;
 };
@@ -190,11 +223,20 @@ export type ItemUpdateRequest = {
     sex?: string | null;
     labels?: Array<string> | null;
     sold?: boolean | null;
+    packageSizeId?: number | null;
+    materialIds?: Array<number> | null;
+    measurementLength?: number | null;
+    measurementWidth?: number | null;
+    enumValues?: Array<ItemEnumValue> | null;
+    attributes?: Array<ItemAttribute> | null;
+    customFields?: Array<ItemCustomField> | null;
     estimatedPrice?: Money | null;
     purchasePrice?: Money | null;
     purchaseDate?: string | null;
+    purchasePlaceId?: number | null;
     sellingPrice?: Money | null;
     sellingDate?: string | null;
+    sellingPlaceId?: number | null;
 };
 
 /**
@@ -213,11 +255,20 @@ export type ItemCreateRequest = {
     sex?: string | null;
     labels?: Array<string>;
     sold?: boolean;
+    packageSizeId?: number | null;
+    materialIds?: Array<number>;
+    measurementLength?: number | null;
+    measurementWidth?: number | null;
+    enumValues?: Array<ItemEnumValue>;
+    attributes?: Array<ItemAttribute>;
+    customFields?: Array<ItemCustomField>;
     estimatedPrice?: Money | null;
     purchasePrice?: Money | null;
     purchaseDate?: string | null;
+    purchasePlaceId?: number | null;
     sellingPrice?: Money | null;
     sellingDate?: string | null;
+    sellingPlaceId?: number | null;
 };
 
 /**
@@ -629,7 +680,7 @@ export type CreateItemErrors = {
      */
     403: ErrorResponse;
     /**
-     * No such resource for this seller (`photo_not_found`, `brand_not_found`): another seller's is a 404 too.
+     * No such resource for this seller (`photo_not_found`, `brand_not_found`, `place_not_found`, `field_not_found`): another seller's is a 404 too.
      */
     404: ErrorResponse;
     /**
@@ -819,7 +870,7 @@ export type UpdateItemErrors = {
      */
     403: ErrorResponse;
     /**
-     * No such resource for this seller (`item_not_found`, `photo_not_found`, `brand_not_found`): another seller's is a 404 too.
+     * No such resource for this seller (`item_not_found`, `photo_not_found`, `brand_not_found`, `place_not_found`, `field_not_found`): another seller's is a 404 too.
      */
     404: ErrorResponse;
     /**
