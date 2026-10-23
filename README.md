@@ -9,6 +9,7 @@ const client = new ControlResell({ apiKey: 'cr_live_...' }); // or set CONTROLRE
 const me = await client.me.getMe();
 for await (const item of client.items.listAll({ sold: false })) console.log(item.name);
 for await (const order of client.orders.listAll({ bucket: 'to_send' })) console.log(order.id); // needs the orders:read scope; also client.orders.getOrder(id), listOrderLabels(id)
+for await (const brand of client.catalogs.listAllBrands({ q: 'nik' })) console.log(brand.id, brand.name); // the identifiers an item is written with (items:read): getCatalogCategory, getCatalogCategoryFields, listAllCategories, listAllBrands, listAllSizes, listCatalogColors, listCatalogConditions, listCatalogPackageSizes, listCatalogMaterials
 
 // Writes (API key with `items:write` / `conversations:write`); pass `{ idempotencyKey }` to choose the key.
 await client.items.publishItem(42, { accountIds: ['<account id>'] });

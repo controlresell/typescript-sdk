@@ -2,7 +2,7 @@
 
 import { client } from './client.gen.js';
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client/index.js';
-import type { CreateItemData, CreateItemErrors, CreateItemResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DropItemPriceData, DropItemPriceErrors, DropItemPriceResponses, GetAccountData, GetAccountErrors, GetAccountResponses, GetConversationData, GetConversationErrors, GetConversationResponses, GetCustomerData, GetCustomerErrors, GetCustomerResponses, GetItemData, GetItemErrors, GetItemResponses, GetMeData, GetMeErrors, GetMeResponses, GetOrderData, GetOrderErrors, GetOrderResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListConversationMessagesData, ListConversationMessagesErrors, ListConversationMessagesResponses, ListConversationsData, ListConversationsErrors, ListConversationsResponses, ListCustomersData, ListCustomersErrors, ListCustomersResponses, ListItemListingsData, ListItemListingsErrors, ListItemListingsResponses, ListItemsData, ListItemsErrors, ListItemsResponses, ListLabelsToShipData, ListLabelsToShipErrors, ListLabelsToShipResponses, ListOrderLabelsData, ListOrderLabelsErrors, ListOrderLabelsResponses, ListOrdersData, ListOrdersErrors, ListOrdersResponses, PublishItemData, PublishItemErrors, PublishItemResponses, RepublishItemData, RepublishItemErrors, RepublishItemResponses, SendMessageData, SendMessageErrors, SendMessageResponses, SendOfferData, SendOfferErrors, SendOfferResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses } from './types.gen.js';
+import type { CreateItemData, CreateItemErrors, CreateItemResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DropItemPriceData, DropItemPriceErrors, DropItemPriceResponses, GetAccountData, GetAccountErrors, GetAccountResponses, GetCatalogCategoryData, GetCatalogCategoryErrors, GetCatalogCategoryFieldsData, GetCatalogCategoryFieldsErrors, GetCatalogCategoryFieldsResponses, GetCatalogCategoryResponses, GetConversationData, GetConversationErrors, GetConversationResponses, GetCustomerData, GetCustomerErrors, GetCustomerResponses, GetItemData, GetItemErrors, GetItemResponses, GetMeData, GetMeErrors, GetMeResponses, GetOrderData, GetOrderErrors, GetOrderResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListCatalogBrandsData, ListCatalogBrandsErrors, ListCatalogBrandsResponses, ListCatalogCategoriesData, ListCatalogCategoriesErrors, ListCatalogCategoriesResponses, ListCatalogColorsData, ListCatalogColorsErrors, ListCatalogColorsResponses, ListCatalogConditionsData, ListCatalogConditionsErrors, ListCatalogConditionsResponses, ListCatalogMaterialsData, ListCatalogMaterialsErrors, ListCatalogMaterialsResponses, ListCatalogPackageSizesData, ListCatalogPackageSizesErrors, ListCatalogPackageSizesResponses, ListCatalogSizesData, ListCatalogSizesErrors, ListCatalogSizesResponses, ListConversationMessagesData, ListConversationMessagesErrors, ListConversationMessagesResponses, ListConversationsData, ListConversationsErrors, ListConversationsResponses, ListCustomersData, ListCustomersErrors, ListCustomersResponses, ListItemListingsData, ListItemListingsErrors, ListItemListingsResponses, ListItemsData, ListItemsErrors, ListItemsResponses, ListLabelsToShipData, ListLabelsToShipErrors, ListLabelsToShipResponses, ListOrderLabelsData, ListOrderLabelsErrors, ListOrderLabelsResponses, ListOrdersData, ListOrdersErrors, ListOrdersResponses, PublishItemData, PublishItemErrors, PublishItemResponses, RepublishItemData, RepublishItemErrors, RepublishItemResponses, SendMessageData, SendMessageErrors, SendMessageResponses, SendOfferData, SendOfferErrors, SendOfferResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses } from './types.gen.js';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -354,6 +354,125 @@ export class Orders {
         return (options.client ?? client).get<ListOrderLabelsResponses, ListOrderLabelsErrors, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/public/v1/orders/{id}/labels',
+            ...options
+        });
+    }
+}
+
+export class Catalogs {
+    /**
+     * List the catalog's categories
+     *
+     * The categories an item's `categoryId` takes, flat, by identifier; each names its parent, so the tree is rebuilt from the pages (or read level by level with `parentId`). One catalog for every marketplace: `platforms` names where the category already has a mapping. Titles in the seller's language. Requires `items:read`.
+     */
+    public static listCatalogCategories<ThrowOnError extends boolean = false>(options?: Options<ListCatalogCategoriesData, ThrowOnError>): RequestResult<ListCatalogCategoriesResponses, ListCatalogCategoriesErrors, ThrowOnError> {
+        return (options?.client ?? client).get<ListCatalogCategoriesResponses, ListCatalogCategoriesErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/catalogs/categories',
+            ...options
+        });
+    }
+    
+    /**
+     * Read one category
+     *
+     * One category of the catalog, by its identifier. Requires `items:read`.
+     */
+    public static getCatalogCategory<ThrowOnError extends boolean = false>(options: Options<GetCatalogCategoryData, ThrowOnError>): RequestResult<GetCatalogCategoryResponses, GetCatalogCategoryErrors, ThrowOnError> {
+        return (options.client ?? client).get<GetCatalogCategoryResponses, GetCatalogCategoryErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/catalogs/categories/{id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Read what an item of a category is filled with
+     *
+     * Everything an item of this category takes beyond its common fields: its size groups (`sizeId`), its enumerated fields with their values, each naming the item field it is written in (`colorIds`, `materialIds`, `state`, `packageSizeId`, or an `enumValues` entry `{"enumKey": field.key, "enumValue": value.key}`), its free-text fields (`attributes`, with whether a marketplace requires them) and the measurements. A field used on one marketplace only names it in `platform`. Requires `items:read`.
+     */
+    public static getCatalogCategoryFields<ThrowOnError extends boolean = false>(options: Options<GetCatalogCategoryFieldsData, ThrowOnError>): RequestResult<GetCatalogCategoryFieldsResponses, GetCatalogCategoryFieldsErrors, ThrowOnError> {
+        return (options.client ?? client).get<GetCatalogCategoryFieldsResponses, GetCatalogCategoryFieldsErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/catalogs/categories/{id}/fields',
+            ...options
+        });
+    }
+    
+    /**
+     * List the brands
+     *
+     * The brands an item's `brandId` takes: the global ones and the seller's own (`custom`), by identifier, or with `q` the brands whose name starts with it, by name (case and accents ignored). Requires `items:read`.
+     */
+    public static listCatalogBrands<ThrowOnError extends boolean = false>(options?: Options<ListCatalogBrandsData, ThrowOnError>): RequestResult<ListCatalogBrandsResponses, ListCatalogBrandsErrors, ThrowOnError> {
+        return (options?.client ?? client).get<ListCatalogBrandsResponses, ListCatalogBrandsErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/catalogs/brands',
+            ...options
+        });
+    }
+    
+    /**
+     * List the sizes
+     *
+     * The sizes an item's `sizeId` takes, by identifier, each with its size group; with `categoryId`, only the sizes of that category's size groups. Requires `items:read`.
+     */
+    public static listCatalogSizes<ThrowOnError extends boolean = false>(options?: Options<ListCatalogSizesData, ThrowOnError>): RequestResult<ListCatalogSizesResponses, ListCatalogSizesErrors, ThrowOnError> {
+        return (options?.client ?? client).get<ListCatalogSizesResponses, ListCatalogSizesErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/catalogs/sizes',
+            ...options
+        });
+    }
+    
+    /**
+     * List the colors
+     *
+     * The colors an item's `colorIds` takes (their `id`), by identifier; with `categoryId`, only those that apply to that category. Titles in the seller's language. Requires `items:read`.
+     */
+    public static listCatalogColors<ThrowOnError extends boolean = false>(options?: Options<ListCatalogColorsData, ThrowOnError>): RequestResult<ListCatalogColorsResponses, ListCatalogColorsErrors, ThrowOnError> {
+        return (options?.client ?? client).get<ListCatalogColorsResponses, ListCatalogColorsErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/catalogs/colors',
+            ...options
+        });
+    }
+    
+    /**
+     * List the conditions
+     *
+     * The conditions an item's `state` takes (their `id`), by identifier; with `categoryId`, only those that apply to that category. Titles in the seller's language. Requires `items:read`.
+     */
+    public static listCatalogConditions<ThrowOnError extends boolean = false>(options?: Options<ListCatalogConditionsData, ThrowOnError>): RequestResult<ListCatalogConditionsResponses, ListCatalogConditionsErrors, ThrowOnError> {
+        return (options?.client ?? client).get<ListCatalogConditionsResponses, ListCatalogConditionsErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/catalogs/conditions',
+            ...options
+        });
+    }
+    
+    /**
+     * List the package sizes
+     *
+     * The package sizes an item's `packageSizeId` takes (their `id`), by identifier; with `categoryId`, only those that apply to that category. Titles in the seller's language. Requires `items:read`.
+     */
+    public static listCatalogPackageSizes<ThrowOnError extends boolean = false>(options?: Options<ListCatalogPackageSizesData, ThrowOnError>): RequestResult<ListCatalogPackageSizesResponses, ListCatalogPackageSizesErrors, ThrowOnError> {
+        return (options?.client ?? client).get<ListCatalogPackageSizesResponses, ListCatalogPackageSizesErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/catalogs/package-sizes',
+            ...options
+        });
+    }
+    
+    /**
+     * List the materials
+     *
+     * The materials an item's `materialIds` takes (their `id`), by identifier; with `categoryId`, only those that apply to that category. Titles in the seller's language. Requires `items:read`.
+     */
+    public static listCatalogMaterials<ThrowOnError extends boolean = false>(options?: Options<ListCatalogMaterialsData, ThrowOnError>): RequestResult<ListCatalogMaterialsResponses, ListCatalogMaterialsErrors, ThrowOnError> {
+        return (options?.client ?? client).get<ListCatalogMaterialsResponses, ListCatalogMaterialsErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/catalogs/materials',
             ...options
         });
     }

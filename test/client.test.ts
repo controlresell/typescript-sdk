@@ -246,6 +246,38 @@ test('customers.getCustomer reads one customer', async () => {
   assert.equal(new URL(requests[0].url).pathname, `/api/public/v1/customers/${id}`);
 });
 
+test('catalogs.listAllBrands follows the cursor with the same query', async () => {
+  const urls: URL[] = [];
+  const { sdk } = client((request) => {
+    const url = new URL(request.url);
+    urls.push(url);
+    return url.searchParams.get('cursor')
+      ? json({ data: [{ id: 2, name: 'Nikon', custom: true }], nextCursor: null })
+      : json({ data: [{ id: 1, name: 'Nike', custom: false }], nextCursor: 'c2' });
+  });
+  const names: string[] = [];
+  for await (const b of sdk.catalogs.listAllBrands({ q: 'nik' })) names.push(b.name);
+  assert.deepEqual(names, ['Nike', 'Nikon']);
+  assert.equal(urls[0].pathname, '/api/public/v1/catalogs/brands');
+  assert.deepEqual(urls.map((u) => u.searchParams.get('q')), ['nik', 'nik']);
+  assert.equal(urls[1].searchParams.get('cursor'), 'c2');
+});
+
+test('catalogs.listCatalogColors sends the category and reads the values', async () => {
+  const { requests, sdk } = client(() => json({ data: [{ id: 3, key: 'red', title: 'Red' }], nextCursor: null }));
+  const page = await sdk.catalogs.listCatalogColors({ categoryId: 12 });
+  assert.equal(page.data[0].title, 'Red');
+  const url = new URL(requests[0].url);
+  assert.equal(url.pathname, '/api/public/v1/catalogs/colors');
+  assert.equal(url.searchParams.get('categoryId'), '12');
+});
+
+test('catalogs.getCatalogCategoryFields reads the fields of one category', async () => {
+  const { requests, sdk } = client(() => json({ categoryId: 12, sizeGroupIds: [1], enumFields: [], textFields: [], measurements: [] }));
+  assert.equal((await sdk.catalogs.getCatalogCategoryFields(12)).categoryId, 12);
+  assert.equal(new URL(requests[0].url).pathname, '/api/public/v1/catalogs/categories/12/fields');
+});
+
 test('conversations.listConversationMessages sends the from and to window', async () => {
   const { requests, sdk } = client(() => json({ data: [], nextCursor: null }));
   await sdk.conversations.listConversationMessages('c1', { from: '2026-10-01T00:00:00Z', to: '2026-10-02T00:00:00Z' });

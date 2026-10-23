@@ -430,6 +430,122 @@ export type OrderPage = {
     nextCursor?: string | null;
 };
 
+/**
+ * CatalogCategory
+ */
+export type CatalogCategory = {
+    id: number;
+    parentId?: number | null;
+    title: string;
+    hasChildren: boolean;
+    sizeGroupIds: Array<number>;
+    platforms: Array<string>;
+};
+
+/**
+ * CatalogCategoryPage
+ */
+export type CatalogCategoryPage = {
+    data: Array<CatalogCategory>;
+    nextCursor?: string | null;
+};
+
+/**
+ * CatalogValue
+ */
+export type CatalogValue = {
+    id: number;
+    key: string;
+    title: string;
+};
+
+/**
+ * CatalogEnumField
+ */
+export type CatalogEnumField = {
+    key: string;
+    title?: string | null;
+    target: string;
+    multiple?: boolean | null;
+    platform?: string | null;
+    values: Array<CatalogValue>;
+};
+
+/**
+ * CatalogTextField
+ */
+export type CatalogTextField = {
+    key: string;
+    title?: string | null;
+    type: string;
+    required: boolean;
+    validation?: string | null;
+    platform?: string | null;
+};
+
+/**
+ * CatalogMeasurement
+ */
+export type CatalogMeasurement = {
+    target: string;
+    unit: string;
+    required: boolean;
+};
+
+/**
+ * CatalogCategoryFields
+ */
+export type CatalogCategoryFields = {
+    categoryId: number;
+    sizeGroupIds: Array<number>;
+    enumFields: Array<CatalogEnumField>;
+    textFields: Array<CatalogTextField>;
+    measurements: Array<CatalogMeasurement>;
+};
+
+/**
+ * CatalogBrand
+ */
+export type CatalogBrand = {
+    id: number;
+    name: string;
+    custom: boolean;
+};
+
+/**
+ * CatalogBrandPage
+ */
+export type CatalogBrandPage = {
+    data: Array<CatalogBrand>;
+    nextCursor?: string | null;
+};
+
+/**
+ * CatalogSize
+ */
+export type CatalogSize = {
+    id: number;
+    title: string;
+    sizeGroupId: number;
+    sizeGroupTitle: string;
+};
+
+/**
+ * CatalogSizePage
+ */
+export type CatalogSizePage = {
+    data: Array<CatalogSize>;
+    nextCursor?: string | null;
+};
+
+/**
+ * CatalogValuePage
+ */
+export type CatalogValuePage = {
+    data: Array<CatalogValue>;
+    nextCursor?: string | null;
+};
+
 export type GetMeData = {
     body?: never;
     path?: never;
@@ -1926,3 +2042,581 @@ export type ListOrderLabelsResponses = {
 };
 
 export type ListOrderLabelsResponse = ListOrderLabelsResponses[keyof ListOrderLabelsResponses];
+
+export type ListCatalogCategoriesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+        /**
+         * Only the direct children of this category.
+         */
+        parentId?: number;
+        /**
+         * The categories that already have a mapping on this marketplace (VINTED, EBAY…), and their ancestors so the tree rebuilds; `platforms` names the marketplaces where each category already has a mapping.
+         */
+        platform?: string;
+    };
+    url: '/api/public/v1/catalogs/categories';
+};
+
+export type ListCatalogCategoriesErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`category_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListCatalogCategoriesError = ListCatalogCategoriesErrors[keyof ListCatalogCategoriesErrors];
+
+export type ListCatalogCategoriesResponses = {
+    /**
+     * A page of categories.
+     */
+    200: CatalogCategoryPage;
+};
+
+export type ListCatalogCategoriesResponse = ListCatalogCategoriesResponses[keyof ListCatalogCategoriesResponses];
+
+export type GetCatalogCategoryData = {
+    body?: never;
+    path: {
+        /**
+         * The category's identifier.
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/api/public/v1/catalogs/categories/{id}';
+};
+
+export type GetCatalogCategoryErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`category_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type GetCatalogCategoryError = GetCatalogCategoryErrors[keyof GetCatalogCategoryErrors];
+
+export type GetCatalogCategoryResponses = {
+    /**
+     * The category.
+     */
+    200: CatalogCategory;
+};
+
+export type GetCatalogCategoryResponse = GetCatalogCategoryResponses[keyof GetCatalogCategoryResponses];
+
+export type GetCatalogCategoryFieldsData = {
+    body?: never;
+    path: {
+        /**
+         * The category's identifier.
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/api/public/v1/catalogs/categories/{id}/fields';
+};
+
+export type GetCatalogCategoryFieldsErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`category_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type GetCatalogCategoryFieldsError = GetCatalogCategoryFieldsErrors[keyof GetCatalogCategoryFieldsErrors];
+
+export type GetCatalogCategoryFieldsResponses = {
+    /**
+     * The category's fields.
+     */
+    200: CatalogCategoryFields;
+};
+
+export type GetCatalogCategoryFieldsResponse = GetCatalogCategoryFieldsResponses[keyof GetCatalogCategoryFieldsResponses];
+
+export type ListCatalogBrandsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+        /**
+         * Only the brands whose name starts with this text, 1 to 100 characters.
+         */
+        q?: string;
+    };
+    url: '/api/public/v1/catalogs/brands';
+};
+
+export type ListCatalogBrandsErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListCatalogBrandsError = ListCatalogBrandsErrors[keyof ListCatalogBrandsErrors];
+
+export type ListCatalogBrandsResponses = {
+    /**
+     * A page of brands.
+     */
+    200: CatalogBrandPage;
+};
+
+export type ListCatalogBrandsResponse = ListCatalogBrandsResponses[keyof ListCatalogBrandsResponses];
+
+export type ListCatalogSizesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+        /**
+         * Only the sizes that apply to this category.
+         */
+        categoryId?: number;
+    };
+    url: '/api/public/v1/catalogs/sizes';
+};
+
+export type ListCatalogSizesErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`category_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListCatalogSizesError = ListCatalogSizesErrors[keyof ListCatalogSizesErrors];
+
+export type ListCatalogSizesResponses = {
+    /**
+     * A page of sizes.
+     */
+    200: CatalogSizePage;
+};
+
+export type ListCatalogSizesResponse = ListCatalogSizesResponses[keyof ListCatalogSizesResponses];
+
+export type ListCatalogColorsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+        /**
+         * Only the colors that apply to this category.
+         */
+        categoryId?: number;
+    };
+    url: '/api/public/v1/catalogs/colors';
+};
+
+export type ListCatalogColorsErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`category_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListCatalogColorsError = ListCatalogColorsErrors[keyof ListCatalogColorsErrors];
+
+export type ListCatalogColorsResponses = {
+    /**
+     * A page of colors.
+     */
+    200: CatalogValuePage;
+};
+
+export type ListCatalogColorsResponse = ListCatalogColorsResponses[keyof ListCatalogColorsResponses];
+
+export type ListCatalogConditionsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+        /**
+         * Only the conditions that apply to this category.
+         */
+        categoryId?: number;
+    };
+    url: '/api/public/v1/catalogs/conditions';
+};
+
+export type ListCatalogConditionsErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`category_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListCatalogConditionsError = ListCatalogConditionsErrors[keyof ListCatalogConditionsErrors];
+
+export type ListCatalogConditionsResponses = {
+    /**
+     * A page of conditions.
+     */
+    200: CatalogValuePage;
+};
+
+export type ListCatalogConditionsResponse = ListCatalogConditionsResponses[keyof ListCatalogConditionsResponses];
+
+export type ListCatalogPackageSizesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+        /**
+         * Only the package sizes that apply to this category.
+         */
+        categoryId?: number;
+    };
+    url: '/api/public/v1/catalogs/package-sizes';
+};
+
+export type ListCatalogPackageSizesErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`category_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListCatalogPackageSizesError = ListCatalogPackageSizesErrors[keyof ListCatalogPackageSizesErrors];
+
+export type ListCatalogPackageSizesResponses = {
+    /**
+     * A page of package sizes.
+     */
+    200: CatalogValuePage;
+};
+
+export type ListCatalogPackageSizesResponse = ListCatalogPackageSizesResponses[keyof ListCatalogPackageSizesResponses];
+
+export type ListCatalogMaterialsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+        /**
+         * Only the materials that apply to this category.
+         */
+        categoryId?: number;
+    };
+    url: '/api/public/v1/catalogs/materials';
+};
+
+export type ListCatalogMaterialsErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`category_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListCatalogMaterialsError = ListCatalogMaterialsErrors[keyof ListCatalogMaterialsErrors];
+
+export type ListCatalogMaterialsResponses = {
+    /**
+     * A page of materials.
+     */
+    200: CatalogValuePage;
+};
+
+export type ListCatalogMaterialsResponse = ListCatalogMaterialsResponses[keyof ListCatalogMaterialsResponses];

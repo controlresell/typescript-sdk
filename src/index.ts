@@ -1,6 +1,8 @@
 import { type Client, createClient } from './generated/client/index.js';
-import { Accounts, Conversations, Customers, Items, Me, Orders } from './generated/sdk.gen.js';
+import { Accounts, Catalogs, Conversations, Customers, Items, Me, Orders } from './generated/sdk.gen.js';
 import type {
+  ListCatalogBrandsData, ListCatalogCategoriesData, ListCatalogColorsData, ListCatalogConditionsData, ListCatalogMaterialsData,
+  ListCatalogPackageSizesData, ListCatalogSizesData,
   CreateItemData, DropItemPriceData, ListAccountsData, ListConversationMessagesData, ListConversationsData, ListCustomersData, ListItemsData,
   ListLabelsToShipData, ListOrdersData, PublishItemData, RepublishItemData, SendMessageData, SendOfferData, UpdateItemData,
 } from './generated/types.gen.js';
@@ -152,6 +154,44 @@ export class ControlResell {
     getCustomer: (id: string) => this.call(Customers.getCustomer({ client: this.client, path: { id } })),
     listAll: (query?: Omit<Query<ListCustomersData>, 'cursor'>) =>
       paginate((cursor) => this.customers.listCustomers({ ...query, cursor })),
+  };
+
+  /**
+   * The catalog an item is written with: categories, brands, sizes, colors... (needs the `items:read` scope). The list
+   * filters are `parentId` and `platform` (categories), `q` (brands) and `categoryId` (the others).
+   */
+  readonly catalogs = {
+    getCatalogCategory: (id: number) => this.call(Catalogs.getCatalogCategory({ client: this.client, path: { id } })),
+    getCatalogCategoryFields: (id: number) =>
+      this.call(Catalogs.getCatalogCategoryFields({ client: this.client, path: { id } })),
+    listCatalogCategories: (query?: Query<ListCatalogCategoriesData>) =>
+      this.call(Catalogs.listCatalogCategories({ client: this.client, query })),
+    listAllCategories: (query?: Omit<Query<ListCatalogCategoriesData>, 'cursor'>) =>
+      paginate((cursor) => this.catalogs.listCatalogCategories({ ...query, cursor })),
+    listCatalogBrands: (query?: Query<ListCatalogBrandsData>) =>
+      this.call(Catalogs.listCatalogBrands({ client: this.client, query })),
+    listAllBrands: (query?: Omit<Query<ListCatalogBrandsData>, 'cursor'>) =>
+      paginate((cursor) => this.catalogs.listCatalogBrands({ ...query, cursor })),
+    listCatalogSizes: (query?: Query<ListCatalogSizesData>) =>
+      this.call(Catalogs.listCatalogSizes({ client: this.client, query })),
+    listAllSizes: (query?: Omit<Query<ListCatalogSizesData>, 'cursor'>) =>
+      paginate((cursor) => this.catalogs.listCatalogSizes({ ...query, cursor })),
+    listCatalogColors: (query?: Query<ListCatalogColorsData>) =>
+      this.call(Catalogs.listCatalogColors({ client: this.client, query })),
+    listAllColors: (query?: Omit<Query<ListCatalogColorsData>, 'cursor'>) =>
+      paginate((cursor) => this.catalogs.listCatalogColors({ ...query, cursor })),
+    listCatalogConditions: (query?: Query<ListCatalogConditionsData>) =>
+      this.call(Catalogs.listCatalogConditions({ client: this.client, query })),
+    listAllConditions: (query?: Omit<Query<ListCatalogConditionsData>, 'cursor'>) =>
+      paginate((cursor) => this.catalogs.listCatalogConditions({ ...query, cursor })),
+    listCatalogPackageSizes: (query?: Query<ListCatalogPackageSizesData>) =>
+      this.call(Catalogs.listCatalogPackageSizes({ client: this.client, query })),
+    listAllPackageSizes: (query?: Omit<Query<ListCatalogPackageSizesData>, 'cursor'>) =>
+      paginate((cursor) => this.catalogs.listCatalogPackageSizes({ ...query, cursor })),
+    listCatalogMaterials: (query?: Query<ListCatalogMaterialsData>) =>
+      this.call(Catalogs.listCatalogMaterials({ client: this.client, query })),
+    listAllMaterials: (query?: Omit<Query<ListCatalogMaterialsData>, 'cursor'>) =>
+      paginate((cursor) => this.catalogs.listCatalogMaterials({ ...query, cursor })),
   };
 
   private async callEmpty(result: Promise<{ error?: unknown; response?: Response }>): Promise<void> {
