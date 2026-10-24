@@ -11,6 +11,9 @@ for await (const item of client.items.listAll({ sold: false })) console.log(item
 for await (const order of client.orders.listAll({ bucket: 'to_send' })) console.log(order.id); // needs the orders:read scope; also client.orders.getOrder(id), listOrderLabels(id)
 for await (const brand of client.catalogs.listAllBrands({ q: 'nik' })) console.log(brand.id, brand.name); // the identifiers an item is written with (items:read): getCatalogCategory, getCatalogCategoryFields, listAllCategories, listAllBrands, listAllSizes, listAllColors, listAllConditions, listAllPackageSizes, listAllMaterials (one page: listCatalog…)
 
+for await (const favorite of client.favorites.listAll({ itemId: 42 })) console.log(favorite.buyerId); // the buyers who favorited a listing (items:read); also listAllItemFavorites(42), listFavorites, listItemFavorites
+await client.conversations.listConversations({ buyerId: 'BUYER_ID', offerStatus: 'PENDING' }); // buyerId, itemId and offerStatus filter the conversations
+
 // Writes (API key with `items:write` / `conversations:write`); pass `{ idempotencyKey }` to choose the key.
 await client.items.publishItem(42, { accountIds: ['<account id>'] });
 await client.items.createItem({ name: 'Jacket' }); // PATCH: client.items.updateItem(42, { name: 'Jacket XL' })

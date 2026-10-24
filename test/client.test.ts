@@ -246,6 +246,42 @@ test('customers.getCustomer reads one customer', async () => {
   assert.equal(new URL(requests[0].url).pathname, `/api/public/v1/customers/${id}`);
 });
 
+test('favorites.listAll follows the cursor with the same filters', async () => {
+  const urls: URL[] = [];
+  const { sdk } = client((request) => {
+    const url = new URL(request.url);
+    urls.push(url);
+    return url.searchParams.get('cursor') ? json({ data: [{ id: 'b', buyerId: 'b2', item: null }], nextCursor: null }) : json({ data: [{ id: 'a', buyerId: 'b1', item: { id: 42, name: 'Jacket' } }], nextCursor: 'c2' });
+  });
+  const buyers: string[] = [];
+  for await (const f of sdk.favorites.listAll({ from: '2026-10-01T00:00:00Z', itemId: 42, accountId: 'acc', limit: 1 })) buyers.push(f.buyerId);
+  assert.deepEqual(buyers, ['b1', 'b2']);
+  assert.equal(urls[0].pathname, '/api/public/v1/favorites');
+  assert.deepEqual(urls.map((u) => u.searchParams.get('itemId')), ['42', '42']);
+  assert.deepEqual(urls.map((u) => u.searchParams.get('accountId')), ['acc', 'acc']);
+  assert.deepEqual(urls.map((u) => u.searchParams.get('from')), ['2026-10-01T00:00:00Z', '2026-10-01T00:00:00Z']);
+  assert.equal(urls[1].searchParams.get('cursor'), 'c2');
+});
+
+test('favorites.listAllItemFavorites reads the favorites of one item', async () => {
+  const { requests, sdk } = client(() => json({ data: [{ id: 'a', buyerId: 'b1', item: null }], nextCursor: null }));
+  const buyers: string[] = [];
+  for await (const f of sdk.favorites.listAllItemFavorites(42, { to: '2026-10-02T00:00:00Z' })) buyers.push(f.buyerId);
+  assert.deepEqual(buyers, ['b1']);
+  const url = new URL(requests[0].url);
+  assert.equal(url.pathname, '/api/public/v1/items/42/favorites');
+  assert.equal(url.searchParams.get('to'), '2026-10-02T00:00:00Z');
+});
+
+test('conversations.listConversations sends the buyer, item and offer status filters', async () => {
+  const { requests, sdk } = client(() => json({ data: [], nextCursor: null }));
+  await sdk.conversations.listConversations({ buyerId: 'b-1', itemId: 42, offerStatus: 'PENDING' });
+  const params = new URL(requests[0].url).searchParams;
+  assert.equal(params.get('buyerId'), 'b-1');
+  assert.equal(params.get('itemId'), '42');
+  assert.equal(params.get('offerStatus'), 'PENDING');
+});
+
 test('catalogs.listAllBrands follows the cursor with the same query', async () => {
   const urls: URL[] = [];
   const { sdk } = client((request) => {

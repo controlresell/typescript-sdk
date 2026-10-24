@@ -1,9 +1,9 @@
 import { type Client, createClient } from './generated/client/index.js';
-import { Accounts, Catalogs, Conversations, Customers, Items, Me, Orders, Webhooks } from './generated/sdk.gen.js';
+import { Accounts, Catalogs, Conversations, Customers, Favorites, Items, Me, Orders, Webhooks } from './generated/sdk.gen.js';
 import type {
   ListCatalogBrandsData, ListCatalogCategoriesData, ListCatalogColorsData, ListCatalogConditionsData, ListCatalogMaterialsData,
   ListCatalogPackageSizesData, ListCatalogSizesData,
-  CreateItemData, DropItemPriceData, ListAccountsData, ListConversationMessagesData, ListConversationsData, ListCustomersData, ListItemsData,
+  CreateItemData, DropItemPriceData, ListAccountsData, ListConversationMessagesData, ListConversationsData, ListCustomersData, ListFavoritesData, ListItemFavoritesData, ListItemsData,
   ListLabelsToShipData, ListOrdersData, PublishItemData, RepublishItemData, SendMessageData, SendOfferData, UpdateItemData,
   CreateWebhookEndpointData, ListWebhookDeliveriesData, ListWebhookEventsData, RecoverWebhookDeliveriesData,
   RotateWebhookSecretData, UpdateWebhookEndpointData,
@@ -156,6 +156,18 @@ export class ControlResell {
     getCustomer: (id: string) => this.call(Customers.getCustomer({ client: this.client, path: { id } })),
     listAll: (query?: Omit<Query<ListCustomersData>, 'cursor'>) =>
       paginate((cursor) => this.customers.listCustomers({ ...query, cursor })),
+  };
+
+  /** The buyers who put the seller's listings in their favorites (needs the `items:read` scope). */
+  readonly favorites = {
+    listFavorites: (query?: Query<ListFavoritesData>) =>
+      this.call(Favorites.listFavorites({ client: this.client, query })),
+    listItemFavorites: (id: number, query?: Query<ListItemFavoritesData>) =>
+      this.call(Favorites.listItemFavorites({ client: this.client, path: { id }, query })),
+    listAll: (query?: Omit<Query<ListFavoritesData>, 'cursor'>) =>
+      paginate((cursor) => this.favorites.listFavorites({ ...query, cursor })),
+    listAllItemFavorites: (id: number, query?: Omit<Query<ListItemFavoritesData>, 'cursor'>) =>
+      paginate((cursor) => this.favorites.listItemFavorites(id, { ...query, cursor })),
   };
 
   /**

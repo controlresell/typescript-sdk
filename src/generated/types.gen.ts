@@ -169,6 +169,38 @@ export type ListingPage = {
 };
 
 /**
+ * FavoriteItem
+ */
+export type FavoriteItem = {
+    id: number;
+    name: string;
+    price: Money;
+    sold: boolean;
+};
+
+/**
+ * Favorite
+ */
+export type Favorite = {
+    id: string;
+    accountId: string;
+    platform?: string | null;
+    buyerId: string;
+    createdAt: string;
+    messageSentAt?: string | null;
+    listingId?: string | null;
+    item?: FavoriteItem | null;
+};
+
+/**
+ * FavoritePage
+ */
+export type FavoritePage = {
+    data: Array<Favorite>;
+    nextCursor?: string | null;
+};
+
+/**
  * PublishRequest
  */
 export type PublishRequest = {
@@ -302,6 +334,7 @@ export type Conversation = {
     accountId: string;
     platform?: string | null;
     buyerLogin?: string | null;
+    buyerId?: string | null;
     unread: boolean;
     pinned: boolean;
     lastMessage?: Message | null;
@@ -1232,6 +1265,81 @@ export type ListItemListingsResponses = {
 
 export type ListItemListingsResponse = ListItemListingsResponses[keyof ListItemListingsResponses];
 
+export type ListItemFavoritesData = {
+    body?: never;
+    path: {
+        /**
+         * The item's identifier, a number.
+         */
+        id: number;
+    };
+    query?: {
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+        /**
+         * Only the favorites created at or after this instant (inclusive), ISO-8601 with its offset, such as `2026-10-01T00:00:00Z`.
+         */
+        from?: string;
+        /**
+         * Only the favorites created before this instant (exclusive), ISO-8601 with its offset; after `from`.
+         */
+        to?: string;
+    };
+    url: '/api/public/v1/items/{id}/favorites';
+};
+
+export type ListItemFavoritesErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`item_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListItemFavoritesError = ListItemFavoritesErrors[keyof ListItemFavoritesErrors];
+
+export type ListItemFavoritesResponses = {
+    /**
+     * A page of the item's favorites.
+     */
+    200: FavoritePage;
+};
+
+export type ListItemFavoritesResponse = ListItemFavoritesResponses[keyof ListItemFavoritesResponses];
+
 export type PublishItemData = {
     body: PublishRequest;
     headers: {
@@ -1488,6 +1596,18 @@ export type ListConversationsData = {
          * Only the conversations whose last message is before this instant (exclusive), ISO-8601 with its offset; after `from`.
          */
         to?: string;
+        /**
+         * Only the conversations with this buyer, by their identifier on the marketplace (a conversation's or a favorite's `buyerId`).
+         */
+        buyerId?: string;
+        /**
+         * Only the conversations about this item of the seller (`GET /items`), through their transactions on the marketplace.
+         */
+        itemId?: number;
+        /**
+         * Only the conversations with at least one offer currently at this status: `PENDING`, `ACCEPTED`, `REJECTED` or `CANCELED`; with `itemId`, an offer on that item.
+         */
+        offerStatus?: string;
     };
     url: '/api/public/v1/conversations';
 };
@@ -1946,6 +2066,80 @@ export type GetCustomerResponses = {
 };
 
 export type GetCustomerResponse = GetCustomerResponses[keyof GetCustomerResponses];
+
+export type ListFavoritesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+        /**
+         * Only the favorites created at or after this instant (inclusive), ISO-8601 with its offset, such as `2026-10-01T00:00:00Z`.
+         */
+        from?: string;
+        /**
+         * Only the favorites created before this instant (exclusive), ISO-8601 with its offset; after `from`.
+         */
+        to?: string;
+        /**
+         * Only the favorites of the listings of this marketplace account (`GET /accounts`).
+         */
+        accountId?: string;
+        /**
+         * Only the favorites of the listings of this item (`GET /items`).
+         */
+        itemId?: number;
+    };
+    url: '/api/public/v1/favorites';
+};
+
+export type ListFavoritesErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListFavoritesError = ListFavoritesErrors[keyof ListFavoritesErrors];
+
+export type ListFavoritesResponses = {
+    /**
+     * A page of favorites.
+     */
+    200: FavoritePage;
+};
+
+export type ListFavoritesResponse = ListFavoritesResponses[keyof ListFavoritesResponses];
 
 export type ListLabelsToShipData = {
     body?: never;
