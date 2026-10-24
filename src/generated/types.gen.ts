@@ -169,6 +169,38 @@ export type ListingPage = {
 };
 
 /**
+ * FavoriteItem
+ */
+export type FavoriteItem = {
+    id: number;
+    name: string;
+    price: Money;
+    sold: boolean;
+};
+
+/**
+ * Favorite
+ */
+export type Favorite = {
+    id: string;
+    accountId: string;
+    platform?: string | null;
+    buyerId: string;
+    createdAt: string;
+    messageSentAt?: string | null;
+    listingId?: string | null;
+    item?: FavoriteItem | null;
+};
+
+/**
+ * FavoritePage
+ */
+export type FavoritePage = {
+    data: Array<Favorite>;
+    nextCursor?: string | null;
+};
+
+/**
  * PublishRequest
  */
 export type PublishRequest = {
@@ -302,6 +334,7 @@ export type Conversation = {
     accountId: string;
     platform?: string | null;
     buyerLogin?: string | null;
+    buyerId?: string | null;
     unread: boolean;
     pinned: boolean;
     lastMessage?: Message | null;
@@ -428,6 +461,278 @@ export type Order = {
 export type OrderPage = {
     data: Array<Order>;
     nextCursor?: string | null;
+};
+
+/**
+ * CatalogCategory
+ */
+export type CatalogCategory = {
+    id: number;
+    parentId?: number | null;
+    title: string;
+    hasChildren: boolean;
+    sizeGroupIds: Array<number>;
+    platforms: Array<string>;
+};
+
+/**
+ * CatalogCategoryPage
+ */
+export type CatalogCategoryPage = {
+    data: Array<CatalogCategory>;
+    nextCursor?: string | null;
+};
+
+/**
+ * CatalogValue
+ */
+export type CatalogValue = {
+    id: number;
+    key: string;
+    title: string;
+};
+
+/**
+ * CatalogEnumField
+ */
+export type CatalogEnumField = {
+    key: string;
+    title?: string | null;
+    target: string;
+    multiple?: boolean | null;
+    platform?: string | null;
+    values: Array<CatalogValue>;
+};
+
+/**
+ * CatalogTextField
+ */
+export type CatalogTextField = {
+    key: string;
+    title?: string | null;
+    type: string;
+    required: boolean;
+    validation?: string | null;
+    platform?: string | null;
+};
+
+/**
+ * CatalogMeasurement
+ */
+export type CatalogMeasurement = {
+    target: string;
+    unit: string;
+    required: boolean;
+};
+
+/**
+ * CatalogCategoryFields
+ */
+export type CatalogCategoryFields = {
+    categoryId: number;
+    sizeGroupIds: Array<number>;
+    enumFields: Array<CatalogEnumField>;
+    textFields: Array<CatalogTextField>;
+    measurements: Array<CatalogMeasurement>;
+};
+
+/**
+ * CatalogBrand
+ */
+export type CatalogBrand = {
+    id: number;
+    name: string;
+    custom: boolean;
+};
+
+/**
+ * CatalogBrandPage
+ */
+export type CatalogBrandPage = {
+    data: Array<CatalogBrand>;
+    nextCursor?: string | null;
+};
+
+/**
+ * CatalogSize
+ */
+export type CatalogSize = {
+    id: number;
+    title: string;
+    sizeGroupId: number;
+    sizeGroupTitle: string;
+};
+
+/**
+ * CatalogSizePage
+ */
+export type CatalogSizePage = {
+    data: Array<CatalogSize>;
+    nextCursor?: string | null;
+};
+
+/**
+ * CatalogValuePage
+ */
+export type CatalogValuePage = {
+    data: Array<CatalogValue>;
+    nextCursor?: string | null;
+};
+
+/**
+ * WebhookEndpoint
+ */
+export type WebhookEndpoint = {
+    id: string;
+    url: string;
+    description?: string | null;
+    eventTypes: Array<string>;
+    payloadMode: string;
+    status: string;
+    disabledReason?: string | null;
+    apiVersion: string;
+    createdAt: string;
+    updatedAt: string;
+    lastSuccessAt?: string | null;
+};
+
+/**
+ * WebhookEndpointPage
+ */
+export type WebhookEndpointPage = {
+    data: Array<WebhookEndpoint>;
+    nextCursor?: string | null;
+};
+
+/**
+ * WebhookEndpointCreateRequest
+ */
+export type WebhookEndpointCreateRequest = {
+    url: string;
+    eventTypes: Array<string>;
+    description?: string | null;
+    payloadMode?: string | null;
+};
+
+/**
+ * CreatedWebhookEndpoint
+ */
+export type CreatedWebhookEndpoint = {
+    endpoint: WebhookEndpoint;
+    secret: string;
+};
+
+/**
+ * WebhookEndpointUpdateRequest
+ */
+export type WebhookEndpointUpdateRequest = {
+    url?: string | null;
+    description?: string | null;
+    eventTypes?: Array<string> | null;
+    payloadMode?: string | null;
+    status?: string | null;
+};
+
+/**
+ * WebhookSecret
+ */
+export type WebhookSecret = {
+    secret: string;
+    previousSecretExpiresAt?: string | null;
+};
+
+/**
+ * WebhookSecretRotateRequest
+ */
+export type WebhookSecretRotateRequest = {
+    expiresInHours?: number | null;
+};
+
+/**
+ * WebhookTestResult
+ */
+export type WebhookTestResult = {
+    success: boolean;
+    statusCode?: number | null;
+    durationMs: number;
+    error?: string | null;
+};
+
+/**
+ * WebhookDelivery
+ */
+export type WebhookDelivery = {
+    id: string;
+    eventId: string;
+    eventType: string;
+    status: string;
+    attempt: number;
+    httpStatus?: number | null;
+    error?: string | null;
+    durationMs?: number | null;
+    nextAttemptAt?: string | null;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * WebhookDeliveryPage
+ */
+export type WebhookDeliveryPage = {
+    data: Array<WebhookDelivery>;
+    nextCursor?: string | null;
+};
+
+/**
+ * WebhookRecoverRequest
+ */
+export type WebhookRecoverRequest = {
+    since: string;
+};
+
+/**
+ * WebhookRecovery
+ */
+export type WebhookRecovery = {
+    count: number;
+    hasMore: boolean;
+};
+
+/**
+ * WebhookEvent
+ */
+export type WebhookEvent = {
+    id: string;
+    type: string;
+    createdAt: string;
+    apiVersion: string;
+    sellerId: number;
+    data: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * WebhookEventPage
+ */
+export type WebhookEventPage = {
+    data: Array<WebhookEvent>;
+    nextCursor?: string | null;
+};
+
+/**
+ * WebhookEventType
+ */
+export type WebhookEventType = {
+    type: string;
+    scope?: string | null;
+};
+
+/**
+ * WebhookEventTypeList
+ */
+export type WebhookEventTypeList = {
+    data: Array<WebhookEventType>;
 };
 
 export type GetMeData = {
@@ -960,6 +1265,81 @@ export type ListItemListingsResponses = {
 
 export type ListItemListingsResponse = ListItemListingsResponses[keyof ListItemListingsResponses];
 
+export type ListItemFavoritesData = {
+    body?: never;
+    path: {
+        /**
+         * The item's identifier, a number.
+         */
+        id: number;
+    };
+    query?: {
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+        /**
+         * Only the favorites created at or after this instant (inclusive), ISO-8601 with its offset, such as `2026-10-01T00:00:00Z`.
+         */
+        from?: string;
+        /**
+         * Only the favorites created before this instant (exclusive), ISO-8601 with its offset; after `from`.
+         */
+        to?: string;
+    };
+    url: '/api/public/v1/items/{id}/favorites';
+};
+
+export type ListItemFavoritesErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`item_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListItemFavoritesError = ListItemFavoritesErrors[keyof ListItemFavoritesErrors];
+
+export type ListItemFavoritesResponses = {
+    /**
+     * A page of the item's favorites.
+     */
+    200: FavoritePage;
+};
+
+export type ListItemFavoritesResponse = ListItemFavoritesResponses[keyof ListItemFavoritesResponses];
+
 export type PublishItemData = {
     body: PublishRequest;
     headers: {
@@ -1216,6 +1596,18 @@ export type ListConversationsData = {
          * Only the conversations whose last message is before this instant (exclusive), ISO-8601 with its offset; after `from`.
          */
         to?: string;
+        /**
+         * Only the conversations with this buyer, by their identifier on the marketplace (a conversation's or a favorite's `buyerId`).
+         */
+        buyerId?: string;
+        /**
+         * Only the conversations about this item of the seller (`GET /items`), through their transactions on the marketplace.
+         */
+        itemId?: number;
+        /**
+         * Only the conversations with at least one offer currently at this status: `PENDING`, `ACCEPTED`, `REJECTED` or `CANCELED`; with `itemId`, an offer on that item.
+         */
+        offerStatus?: string;
     };
     url: '/api/public/v1/conversations';
 };
@@ -1675,6 +2067,80 @@ export type GetCustomerResponses = {
 
 export type GetCustomerResponse = GetCustomerResponses[keyof GetCustomerResponses];
 
+export type ListFavoritesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+        /**
+         * Only the favorites created at or after this instant (inclusive), ISO-8601 with its offset, such as `2026-10-01T00:00:00Z`.
+         */
+        from?: string;
+        /**
+         * Only the favorites created before this instant (exclusive), ISO-8601 with its offset; after `from`.
+         */
+        to?: string;
+        /**
+         * Only the favorites of the listings of this marketplace account (`GET /accounts`).
+         */
+        accountId?: string;
+        /**
+         * Only the favorites of the listings of this item (`GET /items`).
+         */
+        itemId?: number;
+    };
+    url: '/api/public/v1/favorites';
+};
+
+export type ListFavoritesErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListFavoritesError = ListFavoritesErrors[keyof ListFavoritesErrors];
+
+export type ListFavoritesResponses = {
+    /**
+     * A page of favorites.
+     */
+    200: FavoritePage;
+};
+
+export type ListFavoritesResponse = ListFavoritesResponses[keyof ListFavoritesResponses];
+
 export type ListLabelsToShipData = {
     body?: never;
     path?: never;
@@ -1926,3 +2392,1377 @@ export type ListOrderLabelsResponses = {
 };
 
 export type ListOrderLabelsResponse = ListOrderLabelsResponses[keyof ListOrderLabelsResponses];
+
+export type ListCatalogCategoriesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+        /**
+         * Only the direct children of this category.
+         */
+        parentId?: number;
+        /**
+         * The categories that already have a mapping on this marketplace (VINTED, EBAY…), and their ancestors so the tree rebuilds; `platforms` names the marketplaces where each category already has a mapping.
+         */
+        platform?: string;
+    };
+    url: '/api/public/v1/catalogs/categories';
+};
+
+export type ListCatalogCategoriesErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`category_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListCatalogCategoriesError = ListCatalogCategoriesErrors[keyof ListCatalogCategoriesErrors];
+
+export type ListCatalogCategoriesResponses = {
+    /**
+     * A page of categories.
+     */
+    200: CatalogCategoryPage;
+};
+
+export type ListCatalogCategoriesResponse = ListCatalogCategoriesResponses[keyof ListCatalogCategoriesResponses];
+
+export type GetCatalogCategoryData = {
+    body?: never;
+    path: {
+        /**
+         * The category's identifier.
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/api/public/v1/catalogs/categories/{id}';
+};
+
+export type GetCatalogCategoryErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`category_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type GetCatalogCategoryError = GetCatalogCategoryErrors[keyof GetCatalogCategoryErrors];
+
+export type GetCatalogCategoryResponses = {
+    /**
+     * The category.
+     */
+    200: CatalogCategory;
+};
+
+export type GetCatalogCategoryResponse = GetCatalogCategoryResponses[keyof GetCatalogCategoryResponses];
+
+export type GetCatalogCategoryFieldsData = {
+    body?: never;
+    path: {
+        /**
+         * The category's identifier.
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/api/public/v1/catalogs/categories/{id}/fields';
+};
+
+export type GetCatalogCategoryFieldsErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`category_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type GetCatalogCategoryFieldsError = GetCatalogCategoryFieldsErrors[keyof GetCatalogCategoryFieldsErrors];
+
+export type GetCatalogCategoryFieldsResponses = {
+    /**
+     * The category's fields.
+     */
+    200: CatalogCategoryFields;
+};
+
+export type GetCatalogCategoryFieldsResponse = GetCatalogCategoryFieldsResponses[keyof GetCatalogCategoryFieldsResponses];
+
+export type ListCatalogBrandsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+        /**
+         * Only the brands whose name starts with this text, 1 to 100 characters.
+         */
+        q?: string;
+    };
+    url: '/api/public/v1/catalogs/brands';
+};
+
+export type ListCatalogBrandsErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListCatalogBrandsError = ListCatalogBrandsErrors[keyof ListCatalogBrandsErrors];
+
+export type ListCatalogBrandsResponses = {
+    /**
+     * A page of brands.
+     */
+    200: CatalogBrandPage;
+};
+
+export type ListCatalogBrandsResponse = ListCatalogBrandsResponses[keyof ListCatalogBrandsResponses];
+
+export type ListCatalogSizesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+        /**
+         * Only the sizes that apply to this category.
+         */
+        categoryId?: number;
+    };
+    url: '/api/public/v1/catalogs/sizes';
+};
+
+export type ListCatalogSizesErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`category_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListCatalogSizesError = ListCatalogSizesErrors[keyof ListCatalogSizesErrors];
+
+export type ListCatalogSizesResponses = {
+    /**
+     * A page of sizes.
+     */
+    200: CatalogSizePage;
+};
+
+export type ListCatalogSizesResponse = ListCatalogSizesResponses[keyof ListCatalogSizesResponses];
+
+export type ListCatalogColorsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+        /**
+         * Only the colors that apply to this category.
+         */
+        categoryId?: number;
+    };
+    url: '/api/public/v1/catalogs/colors';
+};
+
+export type ListCatalogColorsErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`category_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListCatalogColorsError = ListCatalogColorsErrors[keyof ListCatalogColorsErrors];
+
+export type ListCatalogColorsResponses = {
+    /**
+     * A page of colors.
+     */
+    200: CatalogValuePage;
+};
+
+export type ListCatalogColorsResponse = ListCatalogColorsResponses[keyof ListCatalogColorsResponses];
+
+export type ListCatalogConditionsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+        /**
+         * Only the conditions that apply to this category.
+         */
+        categoryId?: number;
+    };
+    url: '/api/public/v1/catalogs/conditions';
+};
+
+export type ListCatalogConditionsErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`category_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListCatalogConditionsError = ListCatalogConditionsErrors[keyof ListCatalogConditionsErrors];
+
+export type ListCatalogConditionsResponses = {
+    /**
+     * A page of conditions.
+     */
+    200: CatalogValuePage;
+};
+
+export type ListCatalogConditionsResponse = ListCatalogConditionsResponses[keyof ListCatalogConditionsResponses];
+
+export type ListCatalogPackageSizesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+        /**
+         * Only the package sizes that apply to this category.
+         */
+        categoryId?: number;
+    };
+    url: '/api/public/v1/catalogs/package-sizes';
+};
+
+export type ListCatalogPackageSizesErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`category_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListCatalogPackageSizesError = ListCatalogPackageSizesErrors[keyof ListCatalogPackageSizesErrors];
+
+export type ListCatalogPackageSizesResponses = {
+    /**
+     * A page of package sizes.
+     */
+    200: CatalogValuePage;
+};
+
+export type ListCatalogPackageSizesResponse = ListCatalogPackageSizesResponses[keyof ListCatalogPackageSizesResponses];
+
+export type ListCatalogMaterialsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+        /**
+         * Only the materials that apply to this category.
+         */
+        categoryId?: number;
+    };
+    url: '/api/public/v1/catalogs/materials';
+};
+
+export type ListCatalogMaterialsErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`category_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListCatalogMaterialsError = ListCatalogMaterialsErrors[keyof ListCatalogMaterialsErrors];
+
+export type ListCatalogMaterialsResponses = {
+    /**
+     * A page of materials.
+     */
+    200: CatalogValuePage;
+};
+
+export type ListCatalogMaterialsResponse = ListCatalogMaterialsResponses[keyof ListCatalogMaterialsResponses];
+
+export type ListWebhookEndpointsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/public/v1/webhook-endpoints';
+};
+
+export type ListWebhookEndpointsErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The API key does not grant `webhooks:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListWebhookEndpointsError = ListWebhookEndpointsErrors[keyof ListWebhookEndpointsErrors];
+
+export type ListWebhookEndpointsResponses = {
+    /**
+     * The endpoints.
+     */
+    200: WebhookEndpointPage;
+};
+
+export type ListWebhookEndpointsResponse = ListWebhookEndpointsResponses[keyof ListWebhookEndpointsResponses];
+
+export type CreateWebhookEndpointData = {
+    body: WebhookEndpointCreateRequest;
+    headers: {
+        /**
+         * 1 to 255 characters, unique per write: a retry with the same key and the same request answers the first response again (`Idempotent-Replayed: true`), without running the write twice.
+         */
+        'Idempotency-Key': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/public/v1/webhook-endpoints';
+};
+
+export type CreateWebhookEndpointErrors = {
+    /**
+     * A malformed request: `bad_request`, `error_body_invalid`, or no `Idempotency-Key` (`idempotency_key_required`).
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `webhooks:write` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`webhook_endpoint_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The `Idempotency-Key` was used with another request (`idempotency_key_reused`), or its first request is still running (`idempotency_in_progress`).
+     */
+    409: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * The replay guarantee is unavailable (`idempotency_unavailable`): retry later with the same key.
+     */
+    503: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type CreateWebhookEndpointError = CreateWebhookEndpointErrors[keyof CreateWebhookEndpointErrors];
+
+export type CreateWebhookEndpointResponses = {
+    /**
+     * The endpoint and its signing secret; `Location` is its address.
+     */
+    201: CreatedWebhookEndpoint;
+};
+
+export type CreateWebhookEndpointResponse = CreateWebhookEndpointResponses[keyof CreateWebhookEndpointResponses];
+
+export type DeleteWebhookEndpointData = {
+    body?: never;
+    path: {
+        /**
+         * The endpoint's identifier, a UUID.
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/public/v1/webhook-endpoints/{id}';
+};
+
+export type DeleteWebhookEndpointErrors = {
+    /**
+     * A malformed request: `bad_request`, `error_body_invalid`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `webhooks:write` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`webhook_endpoint_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type DeleteWebhookEndpointError = DeleteWebhookEndpointErrors[keyof DeleteWebhookEndpointErrors];
+
+export type DeleteWebhookEndpointResponses = {
+    /**
+     * Deleted.
+     */
+    204: void;
+};
+
+export type DeleteWebhookEndpointResponse = DeleteWebhookEndpointResponses[keyof DeleteWebhookEndpointResponses];
+
+export type GetWebhookEndpointData = {
+    body?: never;
+    path: {
+        /**
+         * The endpoint's identifier, a UUID.
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/public/v1/webhook-endpoints/{id}';
+};
+
+export type GetWebhookEndpointErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The API key does not grant `webhooks:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`webhook_endpoint_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type GetWebhookEndpointError = GetWebhookEndpointErrors[keyof GetWebhookEndpointErrors];
+
+export type GetWebhookEndpointResponses = {
+    /**
+     * The endpoint.
+     */
+    200: WebhookEndpoint;
+};
+
+export type GetWebhookEndpointResponse = GetWebhookEndpointResponses[keyof GetWebhookEndpointResponses];
+
+export type UpdateWebhookEndpointData = {
+    body: WebhookEndpointUpdateRequest;
+    path: {
+        /**
+         * The endpoint's identifier, a UUID.
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/public/v1/webhook-endpoints/{id}';
+};
+
+export type UpdateWebhookEndpointErrors = {
+    /**
+     * A malformed request: `bad_request`, `error_body_invalid`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `webhooks:write` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`webhook_endpoint_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type UpdateWebhookEndpointError = UpdateWebhookEndpointErrors[keyof UpdateWebhookEndpointErrors];
+
+export type UpdateWebhookEndpointResponses = {
+    /**
+     * The endpoint, changed.
+     */
+    200: WebhookEndpoint;
+};
+
+export type UpdateWebhookEndpointResponse = UpdateWebhookEndpointResponses[keyof UpdateWebhookEndpointResponses];
+
+export type GetWebhookSecretData = {
+    body?: never;
+    path: {
+        /**
+         * The endpoint's identifier, a UUID.
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/public/v1/webhook-endpoints/{id}/secret';
+};
+
+export type GetWebhookSecretErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `webhooks:write` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`webhook_endpoint_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type GetWebhookSecretError = GetWebhookSecretErrors[keyof GetWebhookSecretErrors];
+
+export type GetWebhookSecretResponses = {
+    /**
+     * The secret.
+     */
+    200: WebhookSecret;
+};
+
+export type GetWebhookSecretResponse = GetWebhookSecretResponses[keyof GetWebhookSecretResponses];
+
+export type RotateWebhookSecretData = {
+    body?: WebhookSecretRotateRequest;
+    headers: {
+        /**
+         * 1 to 255 characters, unique per write: a retry with the same key and the same request answers the first response again (`Idempotent-Replayed: true`), without running the write twice.
+         */
+        'Idempotency-Key': string;
+    };
+    path: {
+        /**
+         * The endpoint's identifier, a UUID.
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/public/v1/webhook-endpoints/{id}/rotate-secret';
+};
+
+export type RotateWebhookSecretErrors = {
+    /**
+     * A malformed request: `bad_request`, `error_body_invalid`, or no `Idempotency-Key` (`idempotency_key_required`).
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `webhooks:write` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`webhook_endpoint_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The `Idempotency-Key` was used with another request (`idempotency_key_reused`), or its first request is still running (`idempotency_in_progress`).
+     */
+    409: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * The replay guarantee is unavailable (`idempotency_unavailable`): retry later with the same key.
+     */
+    503: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type RotateWebhookSecretError = RotateWebhookSecretErrors[keyof RotateWebhookSecretErrors];
+
+export type RotateWebhookSecretResponses = {
+    /**
+     * The new secret, and until when the previous one still signs.
+     */
+    200: WebhookSecret;
+};
+
+export type RotateWebhookSecretResponse = RotateWebhookSecretResponses[keyof RotateWebhookSecretResponses];
+
+export type TestWebhookEndpointData = {
+    body?: never;
+    path: {
+        /**
+         * The endpoint's identifier, a UUID.
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/public/v1/webhook-endpoints/{id}/test';
+};
+
+export type TestWebhookEndpointErrors = {
+    /**
+     * A malformed request: `bad_request`, `error_body_invalid`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `webhooks:write` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`webhook_endpoint_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type TestWebhookEndpointError = TestWebhookEndpointErrors[keyof TestWebhookEndpointErrors];
+
+export type TestWebhookEndpointResponses = {
+    /**
+     * The result of the call: its status, duration and error.
+     */
+    200: WebhookTestResult;
+};
+
+export type TestWebhookEndpointResponse = TestWebhookEndpointResponses[keyof TestWebhookEndpointResponses];
+
+export type ListWebhookDeliveriesData = {
+    body?: never;
+    path: {
+        /**
+         * The endpoint's identifier, a UUID.
+         */
+        id: string;
+    };
+    query?: {
+        /**
+         * Only the deliveries in this status: `pending`, `delivered` or `failed`.
+         */
+        status?: string;
+        /**
+         * Only the deliveries of this event type.
+         */
+        type?: string;
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+    };
+    url: '/api/public/v1/webhook-endpoints/{id}/deliveries';
+};
+
+export type ListWebhookDeliveriesErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `webhooks:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`webhook_endpoint_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListWebhookDeliveriesError = ListWebhookDeliveriesErrors[keyof ListWebhookDeliveriesErrors];
+
+export type ListWebhookDeliveriesResponses = {
+    /**
+     * A page of deliveries.
+     */
+    200: WebhookDeliveryPage;
+};
+
+export type ListWebhookDeliveriesResponse = ListWebhookDeliveriesResponses[keyof ListWebhookDeliveriesResponses];
+
+export type RetryWebhookDeliveryData = {
+    body?: never;
+    headers: {
+        /**
+         * 1 to 255 characters, unique per write: a retry with the same key and the same request answers the first response again (`Idempotent-Replayed: true`), without running the write twice.
+         */
+        'Idempotency-Key': string;
+    };
+    path: {
+        /**
+         * The endpoint's identifier, a UUID.
+         */
+        id: string;
+        /**
+         * The delivery's identifier, a UUID.
+         */
+        deliveryId: string;
+    };
+    query?: never;
+    url: '/api/public/v1/webhook-endpoints/{id}/deliveries/{deliveryId}/retry';
+};
+
+export type RetryWebhookDeliveryErrors = {
+    /**
+     * A malformed request: `bad_request`, `error_body_invalid`, or no `Idempotency-Key` (`idempotency_key_required`).
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `webhooks:write` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`webhook_endpoint_not_found`, `webhook_delivery_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The `Idempotency-Key` was used with another request (`idempotency_key_reused`), or its first request is still running (`idempotency_in_progress`).
+     */
+    409: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * The replay guarantee is unavailable (`idempotency_unavailable`): retry later with the same key.
+     */
+    503: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type RetryWebhookDeliveryError = RetryWebhookDeliveryErrors[keyof RetryWebhookDeliveryErrors];
+
+export type RetryWebhookDeliveryResponses = {
+    /**
+     * The delivery as it now is, `pending`: queued again, or already queued when it was still `pending`.
+     */
+    202: WebhookDelivery;
+};
+
+export type RetryWebhookDeliveryResponse = RetryWebhookDeliveryResponses[keyof RetryWebhookDeliveryResponses];
+
+export type RecoverWebhookDeliveriesData = {
+    body: WebhookRecoverRequest;
+    headers: {
+        /**
+         * 1 to 255 characters, unique per write: a retry with the same key and the same request answers the first response again (`Idempotent-Replayed: true`), without running the write twice.
+         */
+        'Idempotency-Key': string;
+    };
+    path: {
+        /**
+         * The endpoint's identifier, a UUID.
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/public/v1/webhook-endpoints/{id}/recover';
+};
+
+export type RecoverWebhookDeliveriesErrors = {
+    /**
+     * A malformed request: `bad_request`, `error_body_invalid`, or no `Idempotency-Key` (`idempotency_key_required`).
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `webhooks:write` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`webhook_endpoint_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The `Idempotency-Key` was used with another request (`idempotency_key_reused`), or its first request is still running (`idempotency_in_progress`).
+     */
+    409: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * The replay guarantee is unavailable (`idempotency_unavailable`): retry later with the same key.
+     */
+    503: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type RecoverWebhookDeliveriesError = RecoverWebhookDeliveriesErrors[keyof RecoverWebhookDeliveriesErrors];
+
+export type RecoverWebhookDeliveriesResponses = {
+    /**
+     * How many deliveries were queued again, and whether more remain.
+     */
+    202: WebhookRecovery;
+};
+
+export type RecoverWebhookDeliveriesResponse = RecoverWebhookDeliveriesResponses[keyof RecoverWebhookDeliveriesResponses];
+
+export type ListWebhookEventsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Only the events created at or after this instant, ISO-8601 with its offset, at most 7 days ago (the default).
+         */
+        since?: string;
+        /**
+         * Only these event types, comma separated (`GET /webhook-event-types`).
+         */
+        type?: string;
+        /**
+         * Page size, 1 to 100 (50 by default).
+         */
+        limit?: number;
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+    };
+    url: '/api/public/v1/events';
+};
+
+export type ListWebhookEventsErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `the read scope of each type` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListWebhookEventsError = ListWebhookEventsErrors[keyof ListWebhookEventsErrors];
+
+export type ListWebhookEventsResponses = {
+    /**
+     * A page of events.
+     */
+    200: WebhookEventPage;
+};
+
+export type ListWebhookEventsResponse = ListWebhookEventsResponses[keyof ListWebhookEventsResponses];
+
+export type ListWebhookEventTypesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/public/v1/webhook-event-types';
+};
+
+export type ListWebhookEventTypesErrors = {
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type ListWebhookEventTypesError = ListWebhookEventTypesErrors[keyof ListWebhookEventTypesErrors];
+
+export type ListWebhookEventTypesResponses = {
+    /**
+     * The event types.
+     */
+    200: WebhookEventTypeList;
+};
+
+export type ListWebhookEventTypesResponse = ListWebhookEventTypesResponses[keyof ListWebhookEventTypesResponses];

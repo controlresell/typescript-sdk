@@ -1,8 +1,12 @@
 import { type Client, createClient } from './generated/client/index.js';
-import { Accounts, Conversations, Customers, Items, Me, Orders } from './generated/sdk.gen.js';
+import { Accounts, Catalogs, Conversations, Customers, Favorites, Items, Me, Orders, Webhooks } from './generated/sdk.gen.js';
 import type {
-  CreateItemData, DropItemPriceData, ListAccountsData, ListConversationMessagesData, ListConversationsData, ListCustomersData, ListItemsData,
+  ListCatalogBrandsData, ListCatalogCategoriesData, ListCatalogColorsData, ListCatalogConditionsData, ListCatalogMaterialsData,
+  ListCatalogPackageSizesData, ListCatalogSizesData,
+  CreateItemData, DropItemPriceData, ListAccountsData, ListConversationMessagesData, ListConversationsData, ListCustomersData, ListFavoritesData, ListItemFavoritesData, ListItemsData,
   ListLabelsToShipData, ListOrdersData, PublishItemData, RepublishItemData, SendMessageData, SendOfferData, UpdateItemData,
+  CreateWebhookEndpointData, ListWebhookDeliveriesData, ListWebhookEventsData, RecoverWebhookDeliveriesData,
+  RotateWebhookSecretData, UpdateWebhookEndpointData,
 } from './generated/types.gen.js';
 import { ConnectionError, errorOf } from './errors.js';
 import { retryingFetch, type RetryPolicy } from './fetch.js';
@@ -152,6 +156,100 @@ export class ControlResell {
     getCustomer: (id: string) => this.call(Customers.getCustomer({ client: this.client, path: { id } })),
     listAll: (query?: Omit<Query<ListCustomersData>, 'cursor'>) =>
       paginate((cursor) => this.customers.listCustomers({ ...query, cursor })),
+  };
+
+  /** The buyers who put the seller's listings in their favorites (needs the `items:read` scope). */
+  readonly favorites = {
+    listFavorites: (query?: Query<ListFavoritesData>) =>
+      this.call(Favorites.listFavorites({ client: this.client, query })),
+    listItemFavorites: (id: number, query?: Query<ListItemFavoritesData>) =>
+      this.call(Favorites.listItemFavorites({ client: this.client, path: { id }, query })),
+    listAll: (query?: Omit<Query<ListFavoritesData>, 'cursor'>) =>
+      paginate((cursor) => this.favorites.listFavorites({ ...query, cursor })),
+    listAllItemFavorites: (id: number, query?: Omit<Query<ListItemFavoritesData>, 'cursor'>) =>
+      paginate((cursor) => this.favorites.listItemFavorites(id, { ...query, cursor })),
+  };
+
+  /**
+   * The catalog an item is written with: categories, brands, sizes, colors... (needs the `items:read` scope). The list
+   * filters are `parentId` and `platform` (categories), `q` (brands) and `categoryId` (the others).
+   */
+  readonly catalogs = {
+    getCatalogCategory: (id: number) => this.call(Catalogs.getCatalogCategory({ client: this.client, path: { id } })),
+    getCatalogCategoryFields: (id: number) =>
+      this.call(Catalogs.getCatalogCategoryFields({ client: this.client, path: { id } })),
+    listCatalogCategories: (query?: Query<ListCatalogCategoriesData>) =>
+      this.call(Catalogs.listCatalogCategories({ client: this.client, query })),
+    listAllCategories: (query?: Omit<Query<ListCatalogCategoriesData>, 'cursor'>) =>
+      paginate((cursor) => this.catalogs.listCatalogCategories({ ...query, cursor })),
+    listCatalogBrands: (query?: Query<ListCatalogBrandsData>) =>
+      this.call(Catalogs.listCatalogBrands({ client: this.client, query })),
+    listAllBrands: (query?: Omit<Query<ListCatalogBrandsData>, 'cursor'>) =>
+      paginate((cursor) => this.catalogs.listCatalogBrands({ ...query, cursor })),
+    listCatalogSizes: (query?: Query<ListCatalogSizesData>) =>
+      this.call(Catalogs.listCatalogSizes({ client: this.client, query })),
+    listAllSizes: (query?: Omit<Query<ListCatalogSizesData>, 'cursor'>) =>
+      paginate((cursor) => this.catalogs.listCatalogSizes({ ...query, cursor })),
+    listCatalogColors: (query?: Query<ListCatalogColorsData>) =>
+      this.call(Catalogs.listCatalogColors({ client: this.client, query })),
+    listAllColors: (query?: Omit<Query<ListCatalogColorsData>, 'cursor'>) =>
+      paginate((cursor) => this.catalogs.listCatalogColors({ ...query, cursor })),
+    listCatalogConditions: (query?: Query<ListCatalogConditionsData>) =>
+      this.call(Catalogs.listCatalogConditions({ client: this.client, query })),
+    listAllConditions: (query?: Omit<Query<ListCatalogConditionsData>, 'cursor'>) =>
+      paginate((cursor) => this.catalogs.listCatalogConditions({ ...query, cursor })),
+    listCatalogPackageSizes: (query?: Query<ListCatalogPackageSizesData>) =>
+      this.call(Catalogs.listCatalogPackageSizes({ client: this.client, query })),
+    listAllPackageSizes: (query?: Omit<Query<ListCatalogPackageSizesData>, 'cursor'>) =>
+      paginate((cursor) => this.catalogs.listCatalogPackageSizes({ ...query, cursor })),
+    listCatalogMaterials: (query?: Query<ListCatalogMaterialsData>) =>
+      this.call(Catalogs.listCatalogMaterials({ client: this.client, query })),
+    listAllMaterials: (query?: Omit<Query<ListCatalogMaterialsData>, 'cursor'>) =>
+      paginate((cursor) => this.catalogs.listCatalogMaterials({ ...query, cursor })),
+  };
+
+  /**
+   * The seller's webhook endpoints, their secrets and deliveries, and the events of the last 7 days (`webhooks:read`
+   * and `webhooks:write` scopes). `listWebhookEvents` takes `type` as event types joined by commas.
+   */
+  readonly webhooks = {
+    /** The seller's endpoints, without their secrets (at most 5: a single page). */
+    listWebhookEndpoints: () => this.call(Webhooks.listWebhookEndpoints({ client: this.client })),
+    getWebhookEndpoint: (id: string) => this.call(Webhooks.getWebhookEndpoint({ client: this.client, path: { id } })),
+    /** Creates an endpoint; the answer carries its signing secret (`getWebhookSecret` reads it again). */
+    createWebhookEndpoint: (body: CreateWebhookEndpointData['body'], options?: WriteOptions) =>
+      this.call(Webhooks.createWebhookEndpoint({ client: this.client, body, headers: idempotency(options) })),
+    /** Updates the given fields of an endpoint (a JSON merge patch: `description: null` clears it). */
+    updateWebhookEndpoint: (id: string, body: UpdateWebhookEndpointData['body']) =>
+      this.call(Webhooks.updateWebhookEndpoint({ client: this.client, path: { id }, body })),
+    /** Deletes an endpoint; its pending deliveries are dropped. */
+    deleteWebhookEndpoint: (id: string) =>
+      this.callEmpty(Webhooks.deleteWebhookEndpoint({ client: this.client, path: { id } })),
+    /** The current signing secret of an endpoint. */
+    getWebhookSecret: (id: string) => this.call(Webhooks.getWebhookSecret({ client: this.client, path: { id } })),
+    /** A new signing secret; the previous one stays valid `expiresInHours` (24 by default, 0 stops it at once). */
+    rotateWebhookSecret: (id: string, body: RotateWebhookSecretData['body'] = {}, options?: WriteOptions) =>
+      this.call(Webhooks.rotateWebhookSecret({ client: this.client, path: { id }, body, headers: idempotency(options) })),
+    /** Sends a `webhook.test` event to the endpoint now and returns how it answered. */
+    testWebhookEndpoint: (id: string) => this.call(Webhooks.testWebhookEndpoint({ client: this.client, path: { id } })),
+    /** The deliveries of an endpoint over the last 7 days, the most recent first. */
+    listWebhookDeliveries: (id: string, query?: Query<ListWebhookDeliveriesData>) =>
+      this.call(Webhooks.listWebhookDeliveries({ client: this.client, path: { id }, query })),
+    listAllDeliveries: (id: string, query?: Omit<Query<ListWebhookDeliveriesData>, 'cursor'>) =>
+      paginate((cursor) => this.webhooks.listWebhookDeliveries(id, { ...query, cursor })),
+    /** Sends one event to the endpoint again, with the same `webhook-id`. */
+    retryWebhookDelivery: (id: string, deliveryId: string, options?: WriteOptions) =>
+      this.call(Webhooks.retryWebhookDelivery({ client: this.client, path: { id, deliveryId }, headers: idempotency(options) })),
+    /** Sends again the failed deliveries since `since` (7 days at most, 1,000 per call: call again while `hasMore`). */
+    recoverWebhookDeliveries: (id: string, body: RecoverWebhookDeliveriesData['body'], options?: WriteOptions) =>
+      this.call(Webhooks.recoverWebhookDeliveries({ client: this.client, path: { id }, body, headers: idempotency(options) })),
+    /** The events of the last 7 days, the oldest first: what a client that was offline catches up. */
+    listWebhookEvents: (query?: Query<ListWebhookEventsData>) =>
+      this.call(Webhooks.listWebhookEvents({ client: this.client, query })),
+    listAllEvents: (query?: Omit<Query<ListWebhookEventsData>, 'cursor'>) =>
+      paginate((cursor) => this.webhooks.listWebhookEvents({ ...query, cursor })),
+    /** The catalog of event types and the scope each one needs. */
+    listWebhookEventTypes: () => this.call(Webhooks.listWebhookEventTypes({ client: this.client })),
   };
 
   private async callEmpty(result: Promise<{ error?: unknown; response?: Response }>): Promise<void> {
