@@ -30,11 +30,20 @@ async function shouldRetry(response: Response): Promise<boolean> {
   }
 }
 
+/** `POST /webhook-endpoints/{id}/test` sends a real event and ignores the `Idempotency-Key`: a replay sends a second one. */
+const WEBHOOK_TEST_PATH = /\/webhook-endpoints\/[^/]+\/test\/?$/;
+
+/** Only a 429 is answered before the test event leaves; any other failure may come after it. */
+function isWebhookTest(request: Request): boolean {
+  return request.method === 'POST' && WEBHOOK_TEST_PATH.test(new URL(request.url).pathname);
+}
+
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * A `fetch` that gives each `POST` an `Idempotency-Key` (kept across its retries) and retries the statuses above and
- * network errors, waiting `Retry-After` when the API sends it.
+ * network errors, waiting `Retry-After` when the API sends it. The webhook test call is the exception: it is retried
+ * on a 429 only, since fetch cannot tell a refused connection from a request that reached the server.
  */
 export function retryingFetch(base: typeof fetch, policy: RetryPolicy = {}): (request: Request) => Promise<Response> {
   const maxRetries = policy.maxRetries ?? 2;
@@ -47,17 +56,18 @@ export function retryingFetch(base: typeof fetch, policy: RetryPolicy = {}): (re
       headers.set(IDEMPOTENCY_KEY_HEADER, crypto.randomUUID());
       request = new Request(request, { headers });
     }
+    const notReplayable = isWebhookTest(request);
     for (let attempt = 0; ; attempt++) {
       const last = attempt >= maxRetries;
       let response: Response;
       try {
         response = await base(request.clone());
       } catch (cause) {
-        if (last) throw new ConnectionError(cause);
+        if (last || notReplayable) throw new ConnectionError(cause);
         await sleep(backoff(attempt, baseDelayMs, maxDelayMs));
         continue;
       }
-      if (last || !(await shouldRetry(response))) return response;
+      if (last || (notReplayable && response.status !== 429) || !(await shouldRetry(response))) return response;
       const retryAfter = Number(response.headers.get('Retry-After'));
       await sleep(response.headers.has('Retry-After') && Number.isFinite(retryAfter)
         ? Math.min(retryAfter * 1000, maxDelayMs)
