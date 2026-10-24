@@ -246,10 +246,90 @@ test('customers.getCustomer reads one customer', async () => {
   assert.equal(new URL(requests[0].url).pathname, `/api/public/v1/customers/${id}`);
 });
 
+test('catalogs.listAllBrands follows the cursor with the same query', async () => {
+  const urls: URL[] = [];
+  const { sdk } = client((request) => {
+    const url = new URL(request.url);
+    urls.push(url);
+    return url.searchParams.get('cursor')
+      ? json({ data: [{ id: 2, name: 'Nikon', custom: true }], nextCursor: null })
+      : json({ data: [{ id: 1, name: 'Nike', custom: false }], nextCursor: 'c2' });
+  });
+  const names: string[] = [];
+  for await (const b of sdk.catalogs.listAllBrands({ q: 'nik' })) names.push(b.name);
+  assert.deepEqual(names, ['Nike', 'Nikon']);
+  assert.equal(urls[0].pathname, '/api/public/v1/catalogs/brands');
+  assert.deepEqual(urls.map((u) => u.searchParams.get('q')), ['nik', 'nik']);
+  assert.equal(urls[1].searchParams.get('cursor'), 'c2');
+});
+
+test('catalogs.listCatalogColors sends the category and reads the values', async () => {
+  const { requests, sdk } = client(() => json({ data: [{ id: 3, key: 'red', title: 'Red' }], nextCursor: null }));
+  const page = await sdk.catalogs.listCatalogColors({ categoryId: 12 });
+  assert.equal(page.data[0].title, 'Red');
+  const url = new URL(requests[0].url);
+  assert.equal(url.pathname, '/api/public/v1/catalogs/colors');
+  assert.equal(url.searchParams.get('categoryId'), '12');
+});
+
+test('catalogs.getCatalogCategoryFields reads the fields of one category', async () => {
+  const { requests, sdk } = client(() => json({ categoryId: 12, sizeGroupIds: [1], enumFields: [], textFields: [], measurements: [] }));
+  assert.equal((await sdk.catalogs.getCatalogCategoryFields(12)).categoryId, 12);
+  assert.equal(new URL(requests[0].url).pathname, '/api/public/v1/catalogs/categories/12/fields');
+});
+
 test('conversations.listConversationMessages sends the from and to window', async () => {
   const { requests, sdk } = client(() => json({ data: [], nextCursor: null }));
   await sdk.conversations.listConversationMessages('c1', { from: '2026-10-01T00:00:00Z', to: '2026-10-02T00:00:00Z' });
   const url = new URL(requests[0].url);
   assert.equal(url.searchParams.get('from'), '2026-10-01T00:00:00Z');
   assert.equal(url.searchParams.get('to'), '2026-10-02T00:00:00Z');
+});
+
+const ENDPOINT = {
+  id: '0b6f3c1e-8d43-4a4c-9a55-7f1f2c3d4e5f', url: 'https://example.com/hook', description: null, eventTypes: ['item.sold'],
+  payloadMode: 'light', status: 'enabled', apiVersion: 'v1', createdAt: '2026-10-24T00:00:00Z', updatedAt: '2026-10-24T00:00:00Z',
+};
+
+test('webhooks.createWebhookEndpoint posts with an Idempotency-Key and returns the secret', async () => {
+  const { requests, sdk } = client(() => json({ endpoint: ENDPOINT, secret: 'whsec_abc' }, 201));
+  const created = await sdk.webhooks.createWebhookEndpoint({ url: 'https://example.com/hook', eventTypes: ['item.sold'] });
+  assert.equal(created.secret, 'whsec_abc');
+  assert.equal(requests[0].method, 'POST');
+  assert.equal(new URL(requests[0].url).pathname, '/api/public/v1/webhook-endpoints');
+  assert.ok(requests[0].headers.get(IDEMPOTENCY_KEY_HEADER));
+  assert.deepEqual((await requests[0].json()).eventTypes, ['item.sold']);
+});
+
+test('webhooks.updateWebhookEndpoint sends an explicit null to clear the description', async () => {
+  const { requests, sdk } = client(() => json(ENDPOINT));
+  await sdk.webhooks.updateWebhookEndpoint(ENDPOINT.id, { description: null });
+  assert.equal(requests[0].method, 'PATCH');
+  assert.deepEqual(await requests[0].json(), { description: null });
+});
+
+test('webhooks.listAllEvents follows the cursor with the same types and reads any data', async () => {
+  const { requests, sdk } = client((request) => new URL(request.url).searchParams.has('cursor')
+    ? json({ data: [{ id: 'e2', type: 'order.created', createdAt: '2026-10-24T00:01:00Z', apiVersion: 'v1', sellerId: 7, data: { orderId: 'o1', items: [1, 2] } }], nextCursor: null })
+    : json({ data: [{ id: 'e1', type: 'item.sold', createdAt: '2026-10-24T00:00:00Z', apiVersion: 'v1', sellerId: 7, data: { itemId: 42, object: null } }], nextCursor: 'c2' }));
+  const events = [];
+  for await (const event of sdk.webhooks.listAllEvents({ type: 'item.sold,order.created' })) events.push(event);
+  assert.deepEqual(events.map((e) => e.type), ['item.sold', 'order.created']);
+  assert.equal(events[0].data.itemId, 42);
+  assert.deepEqual(requests.map((r) => new URL(r.url).searchParams.get('type')), ['item.sold,order.created', 'item.sold,order.created']);
+  assert.equal(new URL(requests[1].url).searchParams.get('cursor'), 'c2');
+});
+
+test('webhooks deliveries send their filters, retry posts to the delivery and delete resolves on 204', async () => {
+  const delivery = { id: 'd1', eventId: 'e1', eventType: 'item.sold', status: 'failed', attempt: 3, createdAt: '2026-10-24T00:00:00Z', updatedAt: '2026-10-24T00:00:00Z' };
+  const { requests, sdk } = client((request) => request.method === 'DELETE' ? new Response(null, { status: 204 })
+    : request.method === 'GET' ? json({ data: [delivery], nextCursor: null }) : json(delivery, 202));
+  const page = await sdk.webhooks.listWebhookDeliveries(ENDPOINT.id, { status: 'failed' });
+  assert.equal(page.data[0].attempt, 3);
+  await sdk.webhooks.retryWebhookDelivery(ENDPOINT.id, 'd1');
+  await sdk.webhooks.deleteWebhookEndpoint(ENDPOINT.id);
+  assert.equal(new URL(requests[0].url).searchParams.get('status'), 'failed');
+  assert.equal(new URL(requests[1].url).pathname, `/api/public/v1/webhook-endpoints/${ENDPOINT.id}/deliveries/d1/retry`);
+  assert.ok(requests[1].headers.get(IDEMPOTENCY_KEY_HEADER));
+  assert.equal(requests[2].method, 'DELETE');
 });

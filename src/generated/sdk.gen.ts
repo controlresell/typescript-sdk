@@ -2,7 +2,7 @@
 
 import { client } from './client.gen.js';
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client/index.js';
-import type { CreateItemData, CreateItemErrors, CreateItemResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DropItemPriceData, DropItemPriceErrors, DropItemPriceResponses, GetAccountData, GetAccountErrors, GetAccountResponses, GetConversationData, GetConversationErrors, GetConversationResponses, GetCustomerData, GetCustomerErrors, GetCustomerResponses, GetItemData, GetItemErrors, GetItemResponses, GetMeData, GetMeErrors, GetMeResponses, GetOrderData, GetOrderErrors, GetOrderResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListConversationMessagesData, ListConversationMessagesErrors, ListConversationMessagesResponses, ListConversationsData, ListConversationsErrors, ListConversationsResponses, ListCustomersData, ListCustomersErrors, ListCustomersResponses, ListItemListingsData, ListItemListingsErrors, ListItemListingsResponses, ListItemsData, ListItemsErrors, ListItemsResponses, ListLabelsToShipData, ListLabelsToShipErrors, ListLabelsToShipResponses, ListOrderLabelsData, ListOrderLabelsErrors, ListOrderLabelsResponses, ListOrdersData, ListOrdersErrors, ListOrdersResponses, PublishItemData, PublishItemErrors, PublishItemResponses, RepublishItemData, RepublishItemErrors, RepublishItemResponses, SendMessageData, SendMessageErrors, SendMessageResponses, SendOfferData, SendOfferErrors, SendOfferResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses } from './types.gen.js';
+import type { CreateItemData, CreateItemErrors, CreateItemResponses, CreateWebhookEndpointData, CreateWebhookEndpointErrors, CreateWebhookEndpointResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DeleteWebhookEndpointData, DeleteWebhookEndpointErrors, DeleteWebhookEndpointResponses, DropItemPriceData, DropItemPriceErrors, DropItemPriceResponses, GetAccountData, GetAccountErrors, GetAccountResponses, GetCatalogCategoryData, GetCatalogCategoryErrors, GetCatalogCategoryFieldsData, GetCatalogCategoryFieldsErrors, GetCatalogCategoryFieldsResponses, GetCatalogCategoryResponses, GetConversationData, GetConversationErrors, GetConversationResponses, GetCustomerData, GetCustomerErrors, GetCustomerResponses, GetItemData, GetItemErrors, GetItemResponses, GetMeData, GetMeErrors, GetMeResponses, GetOrderData, GetOrderErrors, GetOrderResponses, GetWebhookEndpointData, GetWebhookEndpointErrors, GetWebhookEndpointResponses, GetWebhookSecretData, GetWebhookSecretErrors, GetWebhookSecretResponses, ListAccountsData, ListAccountsErrors, ListAccountsResponses, ListCatalogBrandsData, ListCatalogBrandsErrors, ListCatalogBrandsResponses, ListCatalogCategoriesData, ListCatalogCategoriesErrors, ListCatalogCategoriesResponses, ListCatalogColorsData, ListCatalogColorsErrors, ListCatalogColorsResponses, ListCatalogConditionsData, ListCatalogConditionsErrors, ListCatalogConditionsResponses, ListCatalogMaterialsData, ListCatalogMaterialsErrors, ListCatalogMaterialsResponses, ListCatalogPackageSizesData, ListCatalogPackageSizesErrors, ListCatalogPackageSizesResponses, ListCatalogSizesData, ListCatalogSizesErrors, ListCatalogSizesResponses, ListConversationMessagesData, ListConversationMessagesErrors, ListConversationMessagesResponses, ListConversationsData, ListConversationsErrors, ListConversationsResponses, ListCustomersData, ListCustomersErrors, ListCustomersResponses, ListItemListingsData, ListItemListingsErrors, ListItemListingsResponses, ListItemsData, ListItemsErrors, ListItemsResponses, ListLabelsToShipData, ListLabelsToShipErrors, ListLabelsToShipResponses, ListOrderLabelsData, ListOrderLabelsErrors, ListOrderLabelsResponses, ListOrdersData, ListOrdersErrors, ListOrdersResponses, ListWebhookDeliveriesData, ListWebhookDeliveriesErrors, ListWebhookDeliveriesResponses, ListWebhookEndpointsData, ListWebhookEndpointsErrors, ListWebhookEndpointsResponses, ListWebhookEventsData, ListWebhookEventsErrors, ListWebhookEventsResponses, ListWebhookEventTypesData, ListWebhookEventTypesErrors, ListWebhookEventTypesResponses, PublishItemData, PublishItemErrors, PublishItemResponses, RecoverWebhookDeliveriesData, RecoverWebhookDeliveriesErrors, RecoverWebhookDeliveriesResponses, RepublishItemData, RepublishItemErrors, RepublishItemResponses, RetryWebhookDeliveryData, RetryWebhookDeliveryErrors, RetryWebhookDeliveryResponses, RotateWebhookSecretData, RotateWebhookSecretErrors, RotateWebhookSecretResponses, SendMessageData, SendMessageErrors, SendMessageResponses, SendOfferData, SendOfferErrors, SendOfferResponses, TestWebhookEndpointData, TestWebhookEndpointErrors, TestWebhookEndpointResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses, UpdateWebhookEndpointData, UpdateWebhookEndpointErrors, UpdateWebhookEndpointResponses } from './types.gen.js';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -354,6 +354,312 @@ export class Orders {
         return (options.client ?? client).get<ListOrderLabelsResponses, ListOrderLabelsErrors, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/public/v1/orders/{id}/labels',
+            ...options
+        });
+    }
+}
+
+export class Catalogs {
+    /**
+     * List the catalog's categories
+     *
+     * The categories an item's `categoryId` takes, flat, by identifier; each names its parent, so the tree is rebuilt from the pages (or read level by level with `parentId`). One catalog for every marketplace: `platforms` names where the category already has a mapping. Titles in the seller's language. Requires `items:read`.
+     */
+    public static listCatalogCategories<ThrowOnError extends boolean = false>(options?: Options<ListCatalogCategoriesData, ThrowOnError>): RequestResult<ListCatalogCategoriesResponses, ListCatalogCategoriesErrors, ThrowOnError> {
+        return (options?.client ?? client).get<ListCatalogCategoriesResponses, ListCatalogCategoriesErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/catalogs/categories',
+            ...options
+        });
+    }
+    
+    /**
+     * Read one category
+     *
+     * One category of the catalog, by its identifier. Requires `items:read`.
+     */
+    public static getCatalogCategory<ThrowOnError extends boolean = false>(options: Options<GetCatalogCategoryData, ThrowOnError>): RequestResult<GetCatalogCategoryResponses, GetCatalogCategoryErrors, ThrowOnError> {
+        return (options.client ?? client).get<GetCatalogCategoryResponses, GetCatalogCategoryErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/catalogs/categories/{id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Read what an item of a category is filled with
+     *
+     * Everything an item of this category takes beyond its common fields: its size groups (`sizeId`), its enumerated fields with their values, each naming the item field it is written in (`colorIds`, `materialIds`, `state`, `packageSizeId`, or an `enumValues` entry `{"enumKey": field.key, "enumValue": value.key}`), its free-text fields (`attributes`, with whether a marketplace requires them) and the measurements. A field used on one marketplace only names it in `platform`. Requires `items:read`.
+     */
+    public static getCatalogCategoryFields<ThrowOnError extends boolean = false>(options: Options<GetCatalogCategoryFieldsData, ThrowOnError>): RequestResult<GetCatalogCategoryFieldsResponses, GetCatalogCategoryFieldsErrors, ThrowOnError> {
+        return (options.client ?? client).get<GetCatalogCategoryFieldsResponses, GetCatalogCategoryFieldsErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/catalogs/categories/{id}/fields',
+            ...options
+        });
+    }
+    
+    /**
+     * List the brands
+     *
+     * The brands an item's `brandId` takes: the global ones and the seller's own (`custom`), by identifier, or with `q` the brands whose name starts with it, by name (case and accents ignored). Requires `items:read`.
+     */
+    public static listCatalogBrands<ThrowOnError extends boolean = false>(options?: Options<ListCatalogBrandsData, ThrowOnError>): RequestResult<ListCatalogBrandsResponses, ListCatalogBrandsErrors, ThrowOnError> {
+        return (options?.client ?? client).get<ListCatalogBrandsResponses, ListCatalogBrandsErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/catalogs/brands',
+            ...options
+        });
+    }
+    
+    /**
+     * List the sizes
+     *
+     * The sizes an item's `sizeId` takes, by identifier, each with its size group; with `categoryId`, only the sizes of that category's size groups. Requires `items:read`.
+     */
+    public static listCatalogSizes<ThrowOnError extends boolean = false>(options?: Options<ListCatalogSizesData, ThrowOnError>): RequestResult<ListCatalogSizesResponses, ListCatalogSizesErrors, ThrowOnError> {
+        return (options?.client ?? client).get<ListCatalogSizesResponses, ListCatalogSizesErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/catalogs/sizes',
+            ...options
+        });
+    }
+    
+    /**
+     * List the colors
+     *
+     * The colors an item's `colorIds` takes (their `id`), by identifier; with `categoryId`, only those that apply to that category. Titles in the seller's language. Requires `items:read`.
+     */
+    public static listCatalogColors<ThrowOnError extends boolean = false>(options?: Options<ListCatalogColorsData, ThrowOnError>): RequestResult<ListCatalogColorsResponses, ListCatalogColorsErrors, ThrowOnError> {
+        return (options?.client ?? client).get<ListCatalogColorsResponses, ListCatalogColorsErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/catalogs/colors',
+            ...options
+        });
+    }
+    
+    /**
+     * List the conditions
+     *
+     * The conditions an item's `state` takes (their `id`), by identifier; with `categoryId`, only those that apply to that category. Titles in the seller's language. Requires `items:read`.
+     */
+    public static listCatalogConditions<ThrowOnError extends boolean = false>(options?: Options<ListCatalogConditionsData, ThrowOnError>): RequestResult<ListCatalogConditionsResponses, ListCatalogConditionsErrors, ThrowOnError> {
+        return (options?.client ?? client).get<ListCatalogConditionsResponses, ListCatalogConditionsErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/catalogs/conditions',
+            ...options
+        });
+    }
+    
+    /**
+     * List the package sizes
+     *
+     * The package sizes an item's `packageSizeId` takes (their `id`), by identifier; with `categoryId`, only those that apply to that category. Titles in the seller's language. Requires `items:read`.
+     */
+    public static listCatalogPackageSizes<ThrowOnError extends boolean = false>(options?: Options<ListCatalogPackageSizesData, ThrowOnError>): RequestResult<ListCatalogPackageSizesResponses, ListCatalogPackageSizesErrors, ThrowOnError> {
+        return (options?.client ?? client).get<ListCatalogPackageSizesResponses, ListCatalogPackageSizesErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/catalogs/package-sizes',
+            ...options
+        });
+    }
+    
+    /**
+     * List the materials
+     *
+     * The materials an item's `materialIds` takes (their `id`), by identifier; with `categoryId`, only those that apply to that category. Titles in the seller's language. Requires `items:read`.
+     */
+    public static listCatalogMaterials<ThrowOnError extends boolean = false>(options?: Options<ListCatalogMaterialsData, ThrowOnError>): RequestResult<ListCatalogMaterialsResponses, ListCatalogMaterialsErrors, ThrowOnError> {
+        return (options?.client ?? client).get<ListCatalogMaterialsResponses, ListCatalogMaterialsErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/catalogs/materials',
+            ...options
+        });
+    }
+}
+
+export class Webhooks {
+    /**
+     * List the seller's webhook endpoints
+     *
+     * Every webhook endpoint of the seller (5 at most), without their secrets: one page, `nextCursor` is always null. Open without the plan, so a seller can still see what receives their events. Requires `webhooks:read`.
+     */
+    public static listWebhookEndpoints<ThrowOnError extends boolean = false>(options?: Options<ListWebhookEndpointsData, ThrowOnError>): RequestResult<ListWebhookEndpointsResponses, ListWebhookEndpointsErrors, ThrowOnError> {
+        return (options?.client ?? client).get<ListWebhookEndpointsResponses, ListWebhookEndpointsErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/webhook-endpoints',
+            ...options
+        });
+    }
+    
+    /**
+     * Create a webhook endpoint
+     *
+     * Registers an `https` URL that receives the seller's events, signed with the secret this response gives (`Cache-Control: no-store`; read it again with `GET /webhook-endpoints/{id}/secret`). `eventTypes` lists the types (`GET /webhook-event-types`) or is `["*"]` for all; the key must be able to read the object of each type. `payloadMode` is `light` (the default) or `full`. 5 endpoints at most per seller. Requires `webhooks:write` and an `Idempotency-Key`.
+     */
+    public static createWebhookEndpoint<ThrowOnError extends boolean = false>(options: Options<CreateWebhookEndpointData, ThrowOnError>): RequestResult<CreateWebhookEndpointResponses, CreateWebhookEndpointErrors, ThrowOnError> {
+        return (options.client ?? client).post<CreateWebhookEndpointResponses, CreateWebhookEndpointErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/webhook-endpoints',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Delete a webhook endpoint
+     *
+     * Deletes the endpoint; its pending deliveries are abandoned. Open without the plan. Requires `webhooks:write`.
+     */
+    public static deleteWebhookEndpoint<ThrowOnError extends boolean = false>(options: Options<DeleteWebhookEndpointData, ThrowOnError>): RequestResult<DeleteWebhookEndpointResponses, DeleteWebhookEndpointErrors, ThrowOnError> {
+        return (options.client ?? client).delete<DeleteWebhookEndpointResponses, DeleteWebhookEndpointErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/webhook-endpoints/{id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Read one webhook endpoint
+     *
+     * One endpoint of the seller, its status and why it is disabled, without its secret. Open without the plan. Requires `webhooks:read`.
+     */
+    public static getWebhookEndpoint<ThrowOnError extends boolean = false>(options: Options<GetWebhookEndpointData, ThrowOnError>): RequestResult<GetWebhookEndpointResponses, GetWebhookEndpointErrors, ThrowOnError> {
+        return (options.client ?? client).get<GetWebhookEndpointResponses, GetWebhookEndpointErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/webhook-endpoints/{id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Change a webhook endpoint
+     *
+     * A JSON merge patch: a field left out keeps its value, `description: null` clears it. Changing `url` or `payloadMode` needs a key that can read everything the endpoint receives. `status` `disabled` stops the deliveries (pending ones fail); `enabled` turns it back on, its failures reset. Only `{"status": "disabled"}` is open without the plan. Requires `webhooks:write`.
+     */
+    public static updateWebhookEndpoint<ThrowOnError extends boolean = false>(options: Options<UpdateWebhookEndpointData, ThrowOnError>): RequestResult<UpdateWebhookEndpointResponses, UpdateWebhookEndpointErrors, ThrowOnError> {
+        return (options.client ?? client).patch<UpdateWebhookEndpointResponses, UpdateWebhookEndpointErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/webhook-endpoints/{id}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Read the signing secret of a webhook endpoint
+     *
+     * The current signing secret (`Cache-Control: no-store`), and until when the previous one still signs after a rotation. Needs a key that can read everything the endpoint receives; the seller is told by e-mail (once an hour at most). Requires `webhooks:write`.
+     */
+    public static getWebhookSecret<ThrowOnError extends boolean = false>(options: Options<GetWebhookSecretData, ThrowOnError>): RequestResult<GetWebhookSecretResponses, GetWebhookSecretErrors, ThrowOnError> {
+        return (options.client ?? client).get<GetWebhookSecretResponses, GetWebhookSecretErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/webhook-endpoints/{id}/secret',
+            ...options
+        });
+    }
+    
+    /**
+     * Rotate the signing secret of a webhook endpoint
+     *
+     * A new signing secret, in this response (`Cache-Control: no-store`). The previous one keeps signing too for `expiresInHours` (0 to 72, 24 by default), so the receiver can switch without losing a delivery. Needs a key that can read everything the endpoint receives; the seller is told by e-mail. Requires `webhooks:write` and an `Idempotency-Key`.
+     */
+    public static rotateWebhookSecret<ThrowOnError extends boolean = false>(options: Options<RotateWebhookSecretData, ThrowOnError>): RequestResult<RotateWebhookSecretResponses, RotateWebhookSecretErrors, ThrowOnError> {
+        return (options.client ?? client).post<RotateWebhookSecretResponses, RotateWebhookSecretErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/webhook-endpoints/{id}/rotate-secret',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Send a test event to a webhook endpoint
+     *
+     * Sends one signed `webhook.test` now and waits for the answer (10 seconds in all). An `Idempotency-Key` is accepted and ignored: a test is never replayed. 429 `webhook_endpoint_busy` while the endpoint already receives as many calls as it may. Requires `webhooks:write`.
+     */
+    public static testWebhookEndpoint<ThrowOnError extends boolean = false>(options: Options<TestWebhookEndpointData, ThrowOnError>): RequestResult<TestWebhookEndpointResponses, TestWebhookEndpointErrors, ThrowOnError> {
+        return (options.client ?? client).post<TestWebhookEndpointResponses, TestWebhookEndpointErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/webhook-endpoints/{id}/test',
+            ...options
+        });
+    }
+    
+    /**
+     * List the deliveries of a webhook endpoint
+     *
+     * The delivery log of the last 7 days, the most recent first, one page at a time: status, attempt, HTTP status, duration and error, never the payload. Filters `status` (`pending`, `delivered`, `failed`) and `type`. Requires `webhooks:read`.
+     */
+    public static listWebhookDeliveries<ThrowOnError extends boolean = false>(options: Options<ListWebhookDeliveriesData, ThrowOnError>): RequestResult<ListWebhookDeliveriesResponses, ListWebhookDeliveriesErrors, ThrowOnError> {
+        return (options.client ?? client).get<ListWebhookDeliveriesResponses, ListWebhookDeliveriesErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/webhook-endpoints/{id}/deliveries',
+            ...options
+        });
+    }
+    
+    /**
+     * Send a delivery again
+     *
+     * Sends this event to this endpoint again, with the same `webhook-id`: a `failed` or `delivered` delivery goes back to `pending`, its attempts from 1 again. A delivery still `pending` (a retry or a recovery in progress) is already queued: it is not queued a second time, and is returned as it is, its attempts unchanged. 409 when the endpoint is disabled, 410 `event_expired` past 7 days. Requires `webhooks:write` and an `Idempotency-Key`.
+     */
+    public static retryWebhookDelivery<ThrowOnError extends boolean = false>(options: Options<RetryWebhookDeliveryData, ThrowOnError>): RequestResult<RetryWebhookDeliveryResponses, RetryWebhookDeliveryErrors, ThrowOnError> {
+        return (options.client ?? client).post<RetryWebhookDeliveryResponses, RetryWebhookDeliveryErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/webhook-endpoints/{id}/deliveries/{deliveryId}/retry',
+            ...options
+        });
+    }
+    
+    /**
+     * Send the failed deliveries again
+     *
+     * Sends again the `failed` deliveries of this endpoint since `since` (7 days back at most), the oldest first, 1 000 at most per call: call again while `hasMore` is true. Requires `webhooks:write` and an `Idempotency-Key`.
+     */
+    public static recoverWebhookDeliveries<ThrowOnError extends boolean = false>(options: Options<RecoverWebhookDeliveriesData, ThrowOnError>): RequestResult<RecoverWebhookDeliveriesResponses, RecoverWebhookDeliveriesErrors, ThrowOnError> {
+        return (options.client ?? client).post<RecoverWebhookDeliveriesResponses, RecoverWebhookDeliveriesErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/webhook-endpoints/{id}/recover',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * List the seller's events
+     *
+     * The events of the last 7 days, the oldest first from `since`, in the envelope of a light webhook body: the way to catch up after being offline. Only the types the key can read (a type asked without its scope is a 403); `type` takes several types, comma separated.
+     */
+    public static listWebhookEvents<ThrowOnError extends boolean = false>(options?: Options<ListWebhookEventsData, ThrowOnError>): RequestResult<ListWebhookEventsResponses, ListWebhookEventsErrors, ThrowOnError> {
+        return (options?.client ?? client).get<ListWebhookEventsResponses, ListWebhookEventsErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/events',
+            ...options
+        });
+    }
+    
+    /**
+     * List the webhook event types
+     *
+     * The catalogue of event types and the read scope each one needs; `webhook.test` is only sent by `POST /webhook-endpoints/{id}/test`, never subscribed to. Open to every key, without the plan.
+     */
+    public static listWebhookEventTypes<ThrowOnError extends boolean = false>(options?: Options<ListWebhookEventTypesData, ThrowOnError>): RequestResult<ListWebhookEventTypesResponses, ListWebhookEventTypesErrors, ThrowOnError> {
+        return (options?.client ?? client).get<ListWebhookEventTypesResponses, ListWebhookEventTypesErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/public/v1/webhook-event-types',
             ...options
         });
     }
