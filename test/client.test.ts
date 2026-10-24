@@ -369,3 +369,25 @@ test('webhooks deliveries send their filters, retry posts to the delivery and de
   assert.ok(requests[1].headers.get(IDEMPOTENCY_KEY_HEADER));
   assert.equal(requests[2].method, 'DELETE');
 });
+
+test('webhooks.testWebhookEndpoint is never replayed after a 5xx or a network error, only after a 429', async () => {
+  const path = `/api/public/v1/webhook-endpoints/${ENDPOINT.id}/test`;
+  for (const status of [500, 502, 503, 504]) {
+    const { requests, sdk } = client(() => json(envelope('unavailable'), status));
+    await assert.rejects(sdk.webhooks.testWebhookEndpoint(ENDPOINT.id));
+    assert.equal(requests.length, 1, `status ${status} is not replayed`);
+    assert.equal(new URL(requests[0].url).pathname, path);
+  }
+  let calls = 0;
+  const failing = client(() => { calls++; throw new TypeError('fetch failed'); });
+  await assert.rejects(failing.sdk.webhooks.testWebhookEndpoint(ENDPOINT.id));
+  assert.equal(calls, 1, 'a network error is not replayed');
+  calls = 0;
+  const busy = client(() => (++calls === 1 ? json(envelope('webhook_endpoint_busy'), 429, { 'Retry-After': '0' }) : json({ status: 200, durationMs: 12 })));
+  await busy.sdk.webhooks.testWebhookEndpoint(ENDPOINT.id);
+  assert.equal(calls, 2, 'a 429 is answered before the event leaves, so it is retried');
+  calls = 0;
+  const other = client(() => (++calls === 1 ? json(envelope('unavailable'), 503) : json({ ...ENDPOINT })));
+  await other.sdk.webhooks.getWebhookEndpoint(ENDPOINT.id);
+  assert.equal(calls, 2, 'other calls keep the retry on 503');
+});
