@@ -4,7 +4,7 @@ TypeScript client for the [ControlResell](https://controlresell.com) public API 
 
 ## Install
 
-From the 0.1.0 release, on [npm](https://www.npmjs.com/package/controlresell):
+From the 1.0.0 release, on [npm](https://www.npmjs.com/package/controlresell):
 
 ```sh
 npm install controlresell

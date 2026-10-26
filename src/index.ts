@@ -18,7 +18,7 @@ export { paginate, type Page } from './pagination.js';
 export type * from './generated/types.gen.js';
 
 /** The version of this SDK. */
-export const VERSION = '0.1.0';
+export const VERSION = '1.0.0';
 
 /** The production address of the API. */
 export const DEFAULT_BASE_URL = 'https://api.controlresell.com';
