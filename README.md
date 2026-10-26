@@ -2,6 +2,15 @@
 
 TypeScript client for the [ControlResell](https://controlresell.com) public API (Node 20+, any runtime with `fetch`).
 
+## Install
+
+From the 0.1.0 release, on [npm](https://www.npmjs.com/package/controlresell):
+
+```sh
+npm install controlresell
+```
+
+
 ```ts
 import { ControlResell } from 'controlresell';
 
@@ -27,4 +36,4 @@ for await (const event of client.webhooks.listAllEvents({ type: 'item.sold' })) 
 
 Retries (rate limits, 502/503/504, network errors), `Idempotency-Key` on every `POST`, cursor pagination with `for await` and typed errors (`NotFoundError`, `RateLimitError`…) are built in. The client is generated from the API's OpenAPI document (`npm run generate`, code in `src/generated`).
 
-Not published yet. Licensed under the Apache License 2.0.
+Licensed under the Apache License 2.0.
