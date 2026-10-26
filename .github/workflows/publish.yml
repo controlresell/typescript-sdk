@@ -1,7 +1,7 @@
 name: Publish
 # Manual only. Publishing to npm is not enabled yet: this builds and packs the package, without any registry credential.
-# By hand, from a clean checkout of main: `npm ci && npm test && npm publish --tag latest --access public`. `--tag latest` is required:
-# the name `controlresell` already has older, higher versions, and npm 11 refuses to put `latest` on a lower version without it.
+# By hand, from a clean checkout of main: `npm ci && npm test && npm publish --tag latest --access public`. The package is published as `controlresell-sdk`
+# (the name `controlresell` is not usable); `--tag latest` is kept explicit so the first release gets the `latest` tag.
 # `prepack` (run by `npm pack` and `npm publish`) builds `dist/` first; without it the package would ship without its compiled files.
 on:
   workflow_dispatch:
