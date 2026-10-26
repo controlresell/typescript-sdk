@@ -4,15 +4,15 @@ TypeScript client for the [ControlResell](https://controlresell.com) public API 
 
 ## Install
 
-From the 1.0.0 release, on [npm](https://www.npmjs.com/package/controlresell):
+From the 1.0.0 release, on [npm](https://www.npmjs.com/package/controlresell-sdk):
 
 ```sh
-npm install controlresell
+npm install controlresell-sdk
 ```
 
 
 ```ts
-import { ControlResell } from 'controlresell';
+import { ControlResell } from 'controlresell-sdk';
 
 const client = new ControlResell({ apiKey: 'cr_live_...' }); // or set CONTROLRESELL_API_KEY
 const me = await client.me.getMe();

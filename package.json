@@ -1,5 +1,5 @@
 {
-  "name": "controlresell",
+  "name": "controlresell-sdk",
   "version": "1.0.0",
   "description": "TypeScript SDK for the ControlResell public API.",
   "license": "Apache-2.0",
