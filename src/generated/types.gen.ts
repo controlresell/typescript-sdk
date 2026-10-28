@@ -408,6 +408,33 @@ export type CustomerPage = {
 };
 
 /**
+ * FileUploadRequest
+ */
+export type FileUploadRequest = {
+    filename: string;
+    contentType: string;
+    size: number;
+};
+
+/**
+ * FileUpload
+ */
+export type FileUpload = {
+    id: string;
+    uploadUrl: string;
+};
+
+/**
+ * File
+ */
+export type File = {
+    id: string;
+    status?: string | null;
+    url: string;
+    createdAt: string;
+};
+
+/**
  * OrderLabel
  */
 export type OrderLabel = {
@@ -2143,6 +2170,131 @@ export type ListFavoritesResponses = {
 };
 
 export type ListFavoritesResponse = ListFavoritesResponses[keyof ListFavoritesResponses];
+
+export type UploadFileData = {
+    body: FileUploadRequest;
+    headers: {
+        /**
+         * 1 to 255 characters, unique per write: a retry with the same key and the same request answers the first response again (`Idempotent-Replayed: true`), without running the write twice.
+         */
+        'Idempotency-Key': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/public/v1/files';
+};
+
+export type UploadFileErrors = {
+    /**
+     * A malformed request: `bad_request`, `error_body_invalid`, or no `Idempotency-Key` (`idempotency_key_required`).
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:write` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The `Idempotency-Key` was used with another request (`idempotency_key_reused`), or its first request is still running (`idempotency_in_progress`).
+     */
+    409: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * The replay guarantee is unavailable (`idempotency_unavailable`): retry later with the same key.
+     */
+    503: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type UploadFileError = UploadFileErrors[keyof UploadFileErrors];
+
+export type UploadFileResponses = {
+    /**
+     * The file is registered: send its bytes to `uploadUrl`.
+     */
+    201: FileUpload;
+};
+
+export type UploadFileResponse = UploadFileResponses[keyof UploadFileResponses];
+
+export type GetFileData = {
+    body?: never;
+    path: {
+        /**
+         * The file's identifier, a UUID.
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/public/v1/files/{id}';
+};
+
+export type GetFileErrors = {
+    /**
+     * A malformed request: `bad_request`, `invalid_limit`, `invalid_cursor`.
+     */
+    400: ErrorResponse;
+    /**
+     * No credential, or an unknown, revoked or expired one (`invalid_token`).
+     */
+    401: ErrorResponse;
+    /**
+     * The seller's plan does not include the public API (`subscriptions_limit_exceeded`, `params.limit` = `PUBLIC_API`).
+     */
+    402: ErrorResponse;
+    /**
+     * The API key does not grant `items:read` (`insufficient_scope`).
+     */
+    403: ErrorResponse;
+    /**
+     * No such resource for this seller (`file_not_found`): another seller's is a 404 too.
+     */
+    404: ErrorResponse;
+    /**
+     * The rate limit of the credential is reached (`rate_limited`, `Retry-After`).
+     */
+    429: ErrorResponse;
+    /**
+     * An unexpected error (`internal_error`): retry later.
+     */
+    500: ErrorResponse;
+    /**
+     * Any other error, in the same envelope (`{"error": {code, message, params, requestId}}`).
+     */
+    default: ErrorResponse;
+};
+
+export type GetFileError = GetFileErrors[keyof GetFileErrors];
+
+export type GetFileResponses = {
+    /**
+     * The file.
+     */
+    200: File;
+};
+
+export type GetFileResponse = GetFileResponses[keyof GetFileResponses];
 
 export type ListLabelsToShipData = {
     body?: never;

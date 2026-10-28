@@ -401,3 +401,41 @@ test('webhooks.testWebhookEndpoint is never replayed after a 5xx or a network er
   await other.sdk.webhooks.getWebhookEndpoint(ENDPOINT.id);
   assert.equal(calls, 2, 'other calls keep the retry on 503');
 });
+
+test('uploadFile registers a file with an Idempotency-Key and getFile reads it', async () => {
+  const { requests, sdk } = client((request) => request.method === 'POST'
+    ? json({ id: 'f1', uploadUrl: 'https://s3.test/put' }, 201)
+    : json({ id: 'f1', status: 'CONFIRMED', url: 'https://s3.test/get', createdAt: '2026-10-28T10:00:00Z' }));
+  const upload = await sdk.files.uploadFile({ filename: 'a.jpg', contentType: 'image/jpeg', size: 3 });
+  assert.equal(upload.uploadUrl, 'https://s3.test/put');
+  assert.equal(new URL(requests[0].url).pathname, '/api/public/v1/files');
+  assert.deepEqual(await requests[0].clone().json(), { filename: 'a.jpg', contentType: 'image/jpeg', size: 3 });
+  assert.ok(requests[0].headers.get(IDEMPOTENCY_KEY_HEADER));
+  const file = await sdk.files.getFile('f1');
+  assert.equal(file.status, 'CONFIRMED');
+  assert.equal(new URL(requests[1].url).pathname, '/api/public/v1/files/f1');
+});
+
+test('upload registers the file then PUTs the bytes without the API key', async () => {
+  const puts: Array<{ url: string; init?: RequestInit }> = [];
+  const requests: Request[] = [];
+  const fetch = (async (input: Request | string, init?: RequestInit) => {
+    if (typeof input === 'string') { puts.push({ url: input, init }); return new Response(null, { status: 200 }); }
+    requests.push(input);
+    return json({ id: 'f1', uploadUrl: 'https://s3.test/put' }, 201);
+  }) as typeof globalThis.fetch;
+  const sdk = new ControlResell({ apiKey: KEY, baseUrl: 'https://api.test', fetch });
+  const upload = await sdk.files.upload(new Uint8Array([1, 2, 3]), { filename: 'a.jpg', contentType: 'image/jpeg' });
+  assert.equal(upload.id, 'f1');
+  assert.deepEqual(await requests[0].clone().json(), { filename: 'a.jpg', contentType: 'image/jpeg', size: 3 });
+  assert.equal(puts[0].url, 'https://s3.test/put');
+  assert.equal(puts[0].init?.method, 'PUT');
+  assert.deepEqual(puts[0].init?.headers, { 'Content-Type': 'image/jpeg' });
+});
+
+test('upload throws when the PUT is refused', async () => {
+  const fetch = (async (input: Request | string) =>
+    typeof input === 'string' ? new Response(null, { status: 403 }) : json({ id: 'f1', uploadUrl: 'https://s3.test/put' }, 201)) as typeof globalThis.fetch;
+  const sdk = new ControlResell({ apiKey: KEY, baseUrl: 'https://api.test', fetch });
+  await assert.rejects(sdk.files.upload(new Uint8Array([1]), { filename: 'a.jpg', contentType: 'image/jpeg' }), /HTTP 403/);
+});
