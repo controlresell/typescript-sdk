@@ -25,6 +25,7 @@ await client.conversations.listConversations({ buyerId: 'BUYER_ID', offerStatus:
 
 // Writes (API key with `items:write` / `conversations:write`); pass `{ idempotencyKey }` to choose the key.
 await client.items.publishItem(42, { accountIds: ['<account id>'] });
+await client.items.publishItem(42, { accountIds: ['<account id>'], scheduledAt: '2026-11-02T10:00:00Z' }); // publishItem, dropItemPrice and republishItem take an optional scheduledAt (ISO 8601, at most 30 days ahead); without it they run now
 await client.items.createItem({ name: 'Jacket' }); // PATCH: client.items.updateItem(42, { name: 'Jacket XL' })
 await client.conversations.sendMessage('<conversation id>', { text: 'Hello!' });
 

@@ -136,6 +136,16 @@ test('dropItemPrice posts the drop to the price-drop route', async () => {
   assert.deepEqual(await requests[0].clone().json(), { type: 'PERCENT', value: '10' });
 });
 
+test('publishItem, dropItemPrice and republishItem send scheduledAt', async () => {
+  const at = '2026-11-02T10:00:00Z';
+  const { requests, sdk } = client(() => json({ itemId: 7, action: 'PUBLISH', accountIds: [], scheduledAt: at }, 202));
+  await sdk.items.publishItem(7, { accountIds: ['a1'], scheduledAt: at });
+  await sdk.items.dropItemPrice(7, { type: 'PERCENT', value: '10', scheduledAt: at });
+  await sdk.items.republishItem(7, { scheduledAt: at });
+  for (const request of requests) assert.equal((await request.clone().json()).scheduledAt, at);
+  assert.equal(requests.length, 3);
+});
+
 test('deleteItem resolves on 204 and throws a typed error on 409', async () => {
   const ok = client(() => new Response(null, { status: 204 }));
   await ok.sdk.items.deleteItem(7);

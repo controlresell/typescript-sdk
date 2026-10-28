@@ -151,7 +151,7 @@ export class Items {
     /**
      * Publish an item on the seller's accounts
      *
-     * Schedules the publication of one item of the seller's stock on the given marketplace accounts, now. The publication runs on the account's browser: read its result on `GET /items/{id}/listings`. To cross-list an item ("list it on eBay"), call this route with that account: this API never relays a marketplace's own API. Publishing one item on several accounts of the same marketplace risks a strike from it: name only the accounts you mean. Requires `items:write` and an `Idempotency-Key`.
+     * Schedules the publication of one item of the seller's stock on the given marketplace accounts, now or at `scheduledAt` (at most 30 days ahead). The publication runs on the account's browser: read its result on `GET /items/{id}/listings`. To cross-list an item ("list it on eBay"), call this route with that account: this API never relays a marketplace's own API. Publishing one item on several accounts of the same marketplace risks a strike from it: name only the accounts you mean. Requires `items:write` and an `Idempotency-Key`.
      */
     public static publishItem<ThrowOnError extends boolean = false>(options: Options<PublishItemData, ThrowOnError>): RequestResult<PublishItemResponses, PublishItemErrors, ThrowOnError> {
         return (options.client ?? client).post<PublishItemResponses, PublishItemErrors, ThrowOnError>({
@@ -168,7 +168,7 @@ export class Items {
     /**
      * Lower the price of an item's listings
      *
-     * Schedules a price drop of the item's existing listings, now, like the price drop of the app: the listings are updated, not republished. `value` is what is removed from each listing's current price, never the new price. Without `accountIds`, every account the item is online on. Requires `items:write` and an `Idempotency-Key`.
+     * Schedules a price drop of the item's existing listings, now or at `scheduledAt` (at most 30 days ahead), like the price drop of the app: the listings are updated, not republished. `value` is what is removed from each listing's current price, never the new price. Without `accountIds`, every account the item is online on. Requires `items:write` and an `Idempotency-Key`.
      */
     public static dropItemPrice<ThrowOnError extends boolean = false>(options: Options<DropItemPriceData, ThrowOnError>): RequestResult<DropItemPriceResponses, DropItemPriceErrors, ThrowOnError> {
         return (options.client ?? client).post<DropItemPriceResponses, DropItemPriceErrors, ThrowOnError>({
@@ -185,7 +185,7 @@ export class Items {
     /**
      * Republish an item on the seller's accounts
      *
-     * Schedules the republication of one item of the seller's stock, now, exactly as the app and the MCP tool `republish_items` do: ControlResell deletes the listing and publishes it again from the item it holds, with the same safeguards (republication pace, publication guards). eBay, Shopify and Etsy do not republish: their accounts are refused (`republish_not_supported`). Without `accountIds`, every account the item is listed on. The republication runs on the account's browser: read its result on `GET /items/{id}/listings`.
+     * Schedules the republication of one item of the seller's stock, now or at `scheduledAt` (at most 30 days ahead), exactly as the app and the MCP tool `republish_items` do: ControlResell deletes the listing and publishes it again from the item it holds, with the same safeguards (republication pace, publication guards). eBay, Shopify and Etsy do not republish: their accounts are refused (`republish_not_supported`). Without `accountIds`, every account the item is listed on. The republication runs on the account's browser: read its result on `GET /items/{id}/listings`.
      *
      * This API never relays a marketplace's own API (Vinted, eBay…): every write runs a ControlResell use case on an item of the seller's stock. To cross-list an item on another account or marketplace ("list it on eBay"), call `POST /items/{id}/publish` with that account. Requires `items:write` and an `Idempotency-Key`; costs 5 units of the rate limit.
      */
@@ -234,7 +234,7 @@ export class Conversations {
     /**
      * List the seller's conversations
      *
-     * The conversations with buyers on the seller's marketplace accounts, latest activity first, one page at a time. A conversation that receives a message while you read moves to the head: read again from the first page to see it. Pass the `nextCursor` of a page as `cursor` with the same filters (a cursor reused with other filters is an `invalid_cursor`). `from` and `to` go straight to a period of the last message: `from` is inclusive, `to` exclusive, and the period is read page by page like the whole list. `buyerId`, `itemId` and `offerStatus` combine with the other filters (AND): `buyerId` is the buyer's identifier on the marketplace (a conversation's `buyerId`); `itemId` keeps the conversations about the item, through their transactions on the marketplace (a conversation the marketplace ties to no listing of the item is not found); `offerStatus` keeps those with at least one offer currently at that status, and with `itemId` that same offer is on the item. An `itemId` that is not one of the seller's items answers an empty page. Requires `conversations:read`.
+     * The conversations with buyers on the seller's marketplace accounts, latest activity first, one page at a time. A conversation that receives a message while you read moves to the head: read again from the first page to see it. Pass the `nextCursor` of a page as `cursor` with the same filters (a cursor reused with other filters is an `invalid_cursor`). `from` and `to` go straight to a period of the last message: `from` is inclusive, `to` exclusive, and the period is read page by page like the whole list. `buyerId`, `itemId` and `offerStatus` combine with the other filters (AND): `buyerId` is the buyer's identifier on the marketplace (a conversation's `buyerId`); `itemId` keeps the conversations about the item, through their transactions on the marketplace (a conversation the marketplace ties to no listing of the item is not found); `offerStatus` keeps those with at least one offer currently at that status; with `itemId`, that offer is on the item through its own transaction, and an offer with no transaction of its own counts when the conversation's transactions carry the item (so the result is approximate for such an offer: it can be an offer about another item of the same conversation). An `itemId` that is not one of the seller's items answers an empty page. Requires `conversations:read`.
      */
     public static listConversations<ThrowOnError extends boolean = false>(options?: Options<ListConversationsData, ThrowOnError>): RequestResult<ListConversationsResponses, ListConversationsErrors, ThrowOnError> {
         return (options?.client ?? client).get<ListConversationsResponses, ListConversationsErrors, ThrowOnError>({
