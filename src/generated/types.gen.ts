@@ -206,6 +206,7 @@ export type FavoritePage = {
 export type PublishRequest = {
     accountIds: Array<string>;
     cancelBeforeProceeding?: boolean | null;
+    scheduledAt?: string | null;
 };
 
 /**
@@ -227,6 +228,7 @@ export type PriceDropRequest = {
     roundType?: string | null;
     roundStep?: string | null;
     accountIds?: Array<string> | null;
+    scheduledAt?: string | null;
 };
 
 /**
@@ -237,6 +239,7 @@ export type RepublishRequest = {
     priceDrop?: PriceDropRequest | null;
     priceVariation?: string | null;
     allowIfDeleted?: boolean | null;
+    scheduledAt?: string | null;
 };
 
 /**
@@ -1409,7 +1412,7 @@ export type PublishItemError = PublishItemErrors[keyof PublishItemErrors];
 
 export type PublishItemResponses = {
     /**
-     * The publication is scheduled on every account of the request.
+     * The publication is scheduled on every account of the request, at `scheduledAt`.
      */
     202: ScheduledAction;
 };
@@ -1485,7 +1488,7 @@ export type DropItemPriceError = DropItemPriceErrors[keyof DropItemPriceErrors];
 
 export type DropItemPriceResponses = {
     /**
-     * The price drop is scheduled on every account named.
+     * The price drop is scheduled on every account named, at `scheduledAt`.
      */
     202: ScheduledAction;
 };
@@ -1605,7 +1608,7 @@ export type ListConversationsData = {
          */
         itemId?: number;
         /**
-         * Only the conversations with at least one offer currently at this status: `PENDING`, `ACCEPTED`, `REJECTED` or `CANCELED`; with `itemId`, an offer on that item.
+         * Only the conversations with at least one offer currently at this status: `PENDING`, `ACCEPTED`, `REJECTED` or `CANCELED`; with `itemId`, an offer on that item (approximate for an offer with no transaction of its own: the conversation's transactions then carry the item).
          */
         offerStatus?: string;
     };
