@@ -64,17 +64,17 @@ const idempotency = (options?: WriteOptions) => ({
 export class ControlResell {
   /** The underlying generated client, configured with the retries and the key. */
   readonly client: Client;
-  private readonly rawFetch: typeof fetch;
+  private readonly send: (request: Request) => Promise<Response>;
 
   constructor(options: ControlResellOptions = {}) {
     const apiKey = options.apiKey ?? environmentVariable(API_KEY_VARIABLE);
     if (!apiKey) throw new Error(`No API key: pass apiKey or set ${API_KEY_VARIABLE}.`);
-    this.rawFetch = options.fetch ?? globalThis.fetch;
+    this.send = retryingFetch(options.fetch ?? globalThis.fetch, options.retry);
     this.client = createClient({
       baseUrl: options.baseUrl ?? DEFAULT_BASE_URL,
       auth: () => apiKey,
       headers: { 'User-Agent': `controlresell-typescript/${VERSION}` },
-      fetch: retryingFetch(options.fetch ?? globalThis.fetch, options.retry) as typeof fetch,
+      fetch: this.send as typeof fetch,
     });
   }
 
@@ -172,17 +172,17 @@ export class ControlResell {
     getFile: (id: string) => this.call(Files.getFile({ client: this.client, path: { id } })),
     /**
      * Registers a file and sends its bytes (an HTTP `PUT` with the same `Content-Type`, no `Authorization` header), within
-     * the 30 minutes the address is valid. Returns the registration: put its `id` in `photoIds`. A refused `PUT` throws.
+     * the 30 minutes the address is valid. Returns the registration: put its `id` in `photoIds`. The `PUT` is retried like any call; a refused one throws a `ControlResellError` (the file is registered but PENDING).
      */
     upload: async (data: Blob | Uint8Array, file: { filename: string; contentType: string }, options?: WriteOptions) => {
       const size = data instanceof Blob ? data.size : data.byteLength;
       const upload = await this.files.uploadFile({ ...file, size }, options);
-      const response = await this.rawFetch(upload.uploadUrl, {
+      const response = await this.send(new Request(upload.uploadUrl, {
         method: 'PUT',
         headers: { 'Content-Type': file.contentType },
         body: data as BodyInit,
-      });
-      if (!response.ok) throw new Error(`Sending the bytes of file ${upload.id} failed: HTTP ${response.status}.`);
+      }));
+      if (!response.ok) throw errorOf(response, undefined);
       return upload;
     },
   };

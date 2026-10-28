@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
-  ConflictError, ControlResell, IDEMPOTENCY_KEY_HEADER, NotFoundError, RateLimitError, ServerError, VERSION,
+  ConflictError, ControlResell, IDEMPOTENCY_KEY_HEADER, NotFoundError, PermissionDeniedError, RateLimitError, ServerError, VERSION,
 } from '../src/index.js';
 
 const KEY = 'cr_test_secret';
@@ -417,25 +417,38 @@ test('uploadFile registers a file with an Idempotency-Key and getFile reads it',
 });
 
 test('upload registers the file then PUTs the bytes without the API key', async () => {
-  const puts: Array<{ url: string; init?: RequestInit }> = [];
   const requests: Request[] = [];
-  const fetch = (async (input: Request | string, init?: RequestInit) => {
-    if (typeof input === 'string') { puts.push({ url: input, init }); return new Response(null, { status: 200 }); }
+  const fetch = (async (input: Request) => {
     requests.push(input);
-    return json({ id: 'f1', uploadUrl: 'https://s3.test/put' }, 201);
+    return input.method === 'PUT' ? new Response(null, { status: 200 }) : json({ id: 'f1', uploadUrl: 'https://s3.test/put' }, 201);
   }) as typeof globalThis.fetch;
   const sdk = new ControlResell({ apiKey: KEY, baseUrl: 'https://api.test', fetch });
   const upload = await sdk.files.upload(new Uint8Array([1, 2, 3]), { filename: 'a.jpg', contentType: 'image/jpeg' });
   assert.equal(upload.id, 'f1');
   assert.deepEqual(await requests[0].clone().json(), { filename: 'a.jpg', contentType: 'image/jpeg', size: 3 });
-  assert.equal(puts[0].url, 'https://s3.test/put');
-  assert.equal(puts[0].init?.method, 'PUT');
-  assert.deepEqual(puts[0].init?.headers, { 'Content-Type': 'image/jpeg' });
+  const put = requests[1];
+  assert.equal(put.url, 'https://s3.test/put');
+  assert.equal(put.method, 'PUT');
+  assert.equal(put.headers.get('Content-Type'), 'image/jpeg');
+  assert.equal(put.headers.get('Authorization'), null);
+  assert.deepEqual([...new Uint8Array(await put.clone().arrayBuffer())], [1, 2, 3]);
 });
 
-test('upload throws when the PUT is refused', async () => {
-  const fetch = (async (input: Request | string) =>
-    typeof input === 'string' ? new Response(null, { status: 403 }) : json({ id: 'f1', uploadUrl: 'https://s3.test/put' }, 201)) as typeof globalThis.fetch;
+test('upload sends a Blob and retries the PUT on a 503', async () => {
+  let puts = 0;
+  const fetch = (async (input: Request) => {
+    if (input.method !== 'PUT') return json({ id: 'f1', uploadUrl: 'https://s3.test/put' }, 201);
+    puts++;
+    return new Response(null, { status: puts === 1 ? 503 : 200 });
+  }) as typeof globalThis.fetch;
+  const sdk = new ControlResell({ apiKey: KEY, baseUrl: 'https://api.test', fetch, retry: { baseDelayMs: 1, maxDelayMs: 5 } });
+  await sdk.files.upload(new Blob([new Uint8Array([1, 2])]), { filename: 'a.png', contentType: 'image/png' });
+  assert.equal(puts, 2);
+});
+
+test('upload throws a typed error when the PUT is refused', async () => {
+  const fetch = (async (input: Request) =>
+    input.method === 'PUT' ? new Response(null, { status: 403 }) : json({ id: 'f1', uploadUrl: 'https://s3.test/put' }, 201)) as typeof globalThis.fetch;
   const sdk = new ControlResell({ apiKey: KEY, baseUrl: 'https://api.test', fetch });
-  await assert.rejects(sdk.files.upload(new Uint8Array([1]), { filename: 'a.jpg', contentType: 'image/jpeg' }), /HTTP 403/);
+  await assert.rejects(sdk.files.upload(new Uint8Array([1]), { filename: 'a.jpg', contentType: 'image/jpeg' }), (e: unknown) => e instanceof PermissionDeniedError);
 });
