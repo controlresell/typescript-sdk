@@ -1,9 +1,9 @@
 import { type Client, createClient } from './generated/client/index.js';
-import { Accounts, Catalogs, Conversations, Customers, Favorites, Items, Me, Orders, Webhooks } from './generated/sdk.gen.js';
+import { Accounts, Catalogs, Conversations, Customers, Favorites, Files, Items, Me, Orders, Webhooks } from './generated/sdk.gen.js';
 import type {
   ListCatalogBrandsData, ListCatalogCategoriesData, ListCatalogColorsData, ListCatalogConditionsData, ListCatalogMaterialsData,
   ListCatalogPackageSizesData, ListCatalogSizesData,
-  CreateItemData, DropItemPriceData, ListAccountsData, ListConversationMessagesData, ListConversationsData, ListCustomersData, ListFavoritesData, ListItemFavoritesData, ListItemsData,
+  CreateItemData, DropItemPriceData, FileUploadRequest, ListAccountsData, ListConversationMessagesData, ListConversationsData, ListCustomersData, ListFavoritesData, ListItemFavoritesData, ListItemsData,
   ListLabelsToShipData, ListOrdersData, PublishItemData, RepublishItemData, SendMessageData, SendOfferData, UpdateItemData,
   CreateWebhookEndpointData, ListWebhookDeliveriesData, ListWebhookEventsData, RecoverWebhookDeliveriesData,
   RotateWebhookSecretData, UpdateWebhookEndpointData,
@@ -18,7 +18,7 @@ export { paginate, type Page } from './pagination.js';
 export type * from './generated/types.gen.js';
 
 /** The version of this SDK. */
-export const VERSION = '1.0.0';
+export const VERSION = '1.1.0';
 
 /** The production address of the API. */
 export const DEFAULT_BASE_URL = 'https://api.controlresell.com';
@@ -64,15 +64,17 @@ const idempotency = (options?: WriteOptions) => ({
 export class ControlResell {
   /** The underlying generated client, configured with the retries and the key. */
   readonly client: Client;
+  private readonly send: (request: Request) => Promise<Response>;
 
   constructor(options: ControlResellOptions = {}) {
     const apiKey = options.apiKey ?? environmentVariable(API_KEY_VARIABLE);
     if (!apiKey) throw new Error(`No API key: pass apiKey or set ${API_KEY_VARIABLE}.`);
+    this.send = retryingFetch(options.fetch ?? globalThis.fetch, options.retry);
     this.client = createClient({
       baseUrl: options.baseUrl ?? DEFAULT_BASE_URL,
       auth: () => apiKey,
       headers: { 'User-Agent': `controlresell-typescript/${VERSION}` },
-      fetch: retryingFetch(options.fetch ?? globalThis.fetch, options.retry) as typeof fetch,
+      fetch: this.send as typeof fetch,
     });
   }
 
@@ -156,6 +158,33 @@ export class ControlResell {
     getCustomer: (id: string) => this.call(Customers.getCustomer({ client: this.client, path: { id } })),
     listAll: (query?: Omit<Query<ListCustomersData>, 'cursor'>) =>
       paginate((cursor) => this.customers.listCustomers({ ...query, cursor })),
+  };
+
+  /**
+   * The photos of the seller's library (`items:write` to register, `items:read` to read). `uploadFile` registers a file
+   * and returns the address to `PUT` its bytes to; `upload` does both; the identifier then goes in `photoIds` of an item.
+   */
+  readonly files = {
+    /** Registers a file (jpeg, png, webp, heic or heif, at most 20 MiB): its identifier and the address where to `PUT` its bytes. */
+    uploadFile: (body: FileUploadRequest, options?: WriteOptions) =>
+      this.call(Files.uploadFile({ client: this.client, body, headers: idempotency(options) })),
+    /** One file of the library, with a signed link to read it; `status` is `PENDING` until its bytes are stored. */
+    getFile: (id: string) => this.call(Files.getFile({ client: this.client, path: { id } })),
+    /**
+     * Registers a file and sends its bytes (an HTTP `PUT` with the same `Content-Type`, no `Authorization` header), within
+     * the 30 minutes the address is valid. Returns the registration: put its `id` in `photoIds`. The `PUT` is retried like any call; a refused one throws a `ControlResellError` (the file is registered but PENDING).
+     */
+    upload: async (data: Blob | Uint8Array, file: { filename: string; contentType: string }, options?: WriteOptions) => {
+      const size = data instanceof Blob ? data.size : data.byteLength;
+      const upload = await this.files.uploadFile({ ...file, size }, options);
+      const response = await this.send(new Request(upload.uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.contentType },
+        body: data as BodyInit,
+      }));
+      if (!response.ok) throw errorOf(response, undefined);
+      return upload;
+    },
   };
 
   /** The buyers who put the seller's listings in their favorites (needs the `items:read` scope). */

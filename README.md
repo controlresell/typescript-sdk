@@ -29,6 +29,11 @@ await client.items.publishItem(42, { accountIds: ['<account id>'], scheduledAt: 
 await client.items.createItem({ name: 'Jacket' }); // PATCH: client.items.updateItem(42, { name: 'Jacket XL' })
 await client.conversations.sendMessage('<conversation id>', { text: 'Hello!' });
 
+// Photos (`items:write`): `upload` registers the file and sends its bytes (an HTTP PUT to the returned address); put its id in `photoIds`.
+// `files.uploadFile` only registers it (you PUT the bytes yourself), `files.getFile(id)` reads it (`status` is PENDING until its bytes are stored).
+const photo = await client.files.upload(await readFile('jacket.jpg'), { filename: 'jacket.jpg', contentType: 'image/jpeg' });
+await client.items.createItem({ name: 'Jacket', photoIds: [photo.id] });
+
 // Webhooks (`webhooks:read` / `webhooks:write`): list, get, create, update, delete an endpoint, read or rotate its secret,
 // test it, list and retry its deliveries, recover the failed ones; listAllEvents catches up the last 7 days.
 const { endpoint, secret } = await client.webhooks.createWebhookEndpoint({ url: 'https://example.com/hooks', eventTypes: ['item.sold'] });
